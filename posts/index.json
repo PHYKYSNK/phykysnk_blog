@@ -1,0 +1,31 @@
+[
+  {
+    "slug": "hello-world",
+    "title": "学习日志·开篇",
+    "date": "2026-06-01",
+    "tags": [
+      "杂谈"
+    ],
+    "excerpt": "为什么开始写学习日志，这里会记录什么，以及一些碎碎念。"
+  },
+  {
+    "slug": "python-basics",
+    "title": "Python 基础回顾：列表推导式与生成器",
+    "date": "2026-06-03",
+    "tags": [
+      "Python",
+      "编程基础"
+    ],
+    "excerpt": "列表推导式和生成器表达式看似相似，但实际使用中有不少需要注意的区别。"
+  },
+  {
+    "slug": "async-basics",
+    "title": "异步编程初步理解",
+    "date": "2026-06-09",
+    "tags": [
+      "Python",
+      "异步"
+    ],
+    "excerpt": "对 async/await 的一些粗浅理解，以及和同步代码的对比思考。"
+  }
+]

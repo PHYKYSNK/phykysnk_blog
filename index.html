@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>学习日志</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📝</text></svg>">
+<link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a href="#/" class="site-title">学习日志</a>
+    <nav class="site-nav">
+      <a href="#/" class="nav-link">首页</a>
+      <a href="#/about" class="nav-link">关于</a>
+    </nav>
+    <button id="theme-toggle" class="theme-btn" aria-label="切换暗色模式">
+      <span class="icon-sun">☀️</span>
+      <span class="icon-moon">🌙</span>
+    </button>
+  </div>
+</header>
+
+<main class="container">
+  <section id="home-view">
+    <div class="home-header">
+      <h1 class="home-title">学习日志</h1>
+      <p class="home-subtitle">记录每一步成长</p>
+      <div class="search-wrap">
+        <input type="search" id="search-input" placeholder="搜索文章..." aria-label="搜索文章">
+      </div>
+      <div id="tag-filter" class="tag-filter"></div>
+    </div>
+    <div id="post-list" class="post-list"></div>
+  </section>
+  <article id="post-view" class="hidden">
+    <a href="#/" class="back-link">&larr; 返回</a>
+    <div id="post-content" class="post-content"></div>
+  </article>
+  <article id="about-view" class="hidden">
+    <a href="#/" class="back-link">&larr; 返回</a>
+    <div id="about-content" class="post-content"></div>
+  </article>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <p>&copy; 2026 · 学习日志 · 用 Markdown 写作 · 托管在 Cloudflare Pages</p>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="scripts/main.js"></script>
+</body>
+</html>
