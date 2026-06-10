@@ -4,7 +4,7 @@
     "title": "Java SE 学习笔记：基础篇",
     "date": "2026-06-10",
     "tags": ["Java", "编程基础"],
-    "excerpt": "变量、数据类型、运算符、控制流程、数组。"
+    "excerpt": "变量、数据类型、运算符、控制流程、数组——Java 入门的全部基础内容。"
   },
   {
     "slug": "java-oop",
@@ -14,32 +14,67 @@
     "excerpt": "类与对象、封装、继承、多态、抽象类与接口。"
   },
   {
+    "slug": "java-common-classes",
+    "title": "Java SE：String 与包装类",
+    "date": "2026-06-10",
+    "tags": ["Java", "编程基础"],
+    "excerpt": "String 常用方法、StringBuilder、自动装箱拆箱、包装类。"
+  },
+  {
     "slug": "java-advanced",
-    "title": "Java SE 学习笔记：高级特性",
+    "title": "Java SE：异常处理、IO流与网络编程",
     "date": "2026-06-10",
     "tags": ["Java", "高级"],
-    "excerpt": "异常处理、IO流、多线程、网络编程、反射与注解。"
+    "excerpt": "异常、IO流（字节流/字符流/缓冲流）、TCP/UDP 网络编程、反射与注解。"
   },
   {
     "slug": "cpp-stl",
     "title": "算法笔记：C++ 基础与 STL 容器",
     "date": "2026-06-10",
     "tags": ["C++", "算法", "STL"],
-    "excerpt": "vector、string、stack、queue、set 用法。"
+    "excerpt": "vector、string、stack、queue、set——C++ 常用容器的用法总结。"
   },
   {
     "slug": "algo-sort-search",
     "title": "算法笔记：排序与搜索",
     "date": "2026-06-10",
     "tags": ["C++", "算法", "排序"],
-    "excerpt": "快排、归并、DFS、BFS。"
+    "excerpt": "快排、归并、选择排序、冒泡排序、插入排序、DFS、BFS。"
   },
   {
     "slug": "algo-math",
     "title": "算法笔记：数学与数论",
     "date": "2026-06-10",
     "tags": ["C++", "算法", "数学"],
-    "excerpt": "快速幂、素数筛、欧拉函数、高精度运算。"
+    "excerpt": "快速幂、素数筛、欧拉函数、高精度运算、最大公约数。"
+  },
+  {
+    "slug": "algo-binary-prefix",
+    "title": "算法笔记：二分查找 & 前缀和差分",
+    "date": "2026-06-10",
+    "tags": ["C++", "算法"],
+    "excerpt": "整数二分两个模板、浮点数二分、一维/二维前缀和、差分。"
+  },
+  {
+    "slug": "algo-interval-discrete",
+    "title": "算法笔记：区间合并 & 离散化",
+    "date": "2026-06-10",
+    "tags": ["C++", "算法"],
+    "excerpt": "区间合并的思路与代码、离散化的三步操作。"
+  },
+  {
+    "slug": "algo-graph-dp",
+    "title": "算法笔记：图论与动态规划",
+    "date": "2026-06-10",
+    "tags": ["C++", "算法"],
+    "excerpt": "图的邻接表存储与遍历（DFS/BFS）、01背包、完全背包。"
+  },
+  {
+    "slug": "algo-ds",
+    "title": "算法笔记：常用数据结构",
+    "date": "2026-06-10",
+    "tags": ["C++", "算法", "数据结构"],
+    "excerpt": "单调栈、单调队列（滑动窗口）、KMP、并查集、堆、哈希表。"
   },
   {
     "slug": "markdown-ref",
