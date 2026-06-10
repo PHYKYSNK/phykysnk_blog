@@ -1,156 +1,45 @@
-# Ëã·¨±Ê¼Ç£ºC++ »ù´¡Óë STL ÈİÆ÷
+ï»¿# ç®—æ³•ç¬”è®°ï¼šC++ åŸºç¡€ä¸ STL å®¹å™¨
 
 **2026-06-10**
 
 ---
 
-ÏµÍ³¹ıÁËÒ»±é C++ µÄ STL ÈİÆ÷£¬°´Ê¹ÓÃÆµÂÊ´Ó¸ßµ½µÍÕûÀí¡£
-
-## 1. vector£¨¶¯Ì¬Êı×é£©
-
-×î³£ÓÃµÄÈİÆ÷£¬×Ô¶¯À©Èİ¡£
+## vector
 
 ```cpp
-vector<int> v1;
-vector<int> v2(6, 2);      // 6¸ö2
-
-v.push_back(10);           // Î²²¿Ìí¼Ó
-v.pop_back();              // Î²²¿É¾³ı
-v.size();                  // ÔªËØ¸öÊı
-
-v.insert(v.begin(), 66);   // Ö¸¶¨Î»ÖÃ²åÈë
-v.erase(v.begin());        // Ö¸¶¨Î»ÖÃÉ¾³ı
-v.clear();                 // Çå¿Õ
-v.front(); v.back();       // Ê×Î²ÔªËØ
-
-// ²éÕÒ£¨±ØĞëÓĞĞò£©
+v.push_back(10); v.pop_back();
+v.size(); v.clear();
+v.insert(v.begin(), 66);
 int idx = lower_bound(v.begin(), v.end(), x) - v.begin();
-bool found = binary_search(v.begin(), v.end(), x);
-
-// ÄæÖÃ
+sort(v.begin(), v.end());
 reverse(v.begin(), v.end());
-
-// ±éÀú
-for (int x : v) cout << x << " ";
 ```
 
-## 2. string£¨×Ö·û´®£©
+## string
 
 ```cpp
 string s = "hello";
-s += " world";
-s.size(); s.length();
-
-// ²éÕÒ£¨×¢Òâ£ºstring ÓÃ s.find()£¬²»ÄÜÓÃ find(s.begin(),s.end())£©
-int pos = s.find("world");      // ÕıÏò²éÕÒ
-int pos2 = s.rfind("world");    // ·´Ïò²éÕÒ
-// Ã»ÕÒµ½·µ»Ø -1£¨»ò string::npos£©
-
-s.insert(3, "gh");              // ²åÈë
-s.erase(4, 3);                  // É¾³ı
-s.substr(0, 5);                 // È¡×Ó´®
-
-// ´óĞ¡Ğ´×ª»»
-transform(s.begin(), s.end(), s.begin(), ::toupper);
-transform(s.begin(), s.end(), s.begin(), ::tolower);
-
-// Êı×Ö×ª×Ö·û´®
-string s = to_string(10086);
-int n = stoi("10086");
+s.find("world");
+s.substr(0, 5);
+to_string(10086);
+stoi("10086");
 ```
 
-## 3. deque£¨Ë«¶Ë¶ÓÁĞ£©
-
-Í·Î²¶¼¿ÉÒÔ²Ù×÷£¬µ«ËÙ¶ÈÂı¡£
+## stack / queue
 
 ```cpp
-deque<int> d;
-d.push_front(1);
-d.push_back(2);
-d.pop_front();
-d.pop_back();
-d.front(); d.back();
+stack<int> s; s.push(1); s.pop(); s.top();
+queue<int> q; q.push(1); q.pop(); q.front(); q.back();
 ```
 
-## 4. stack£¨Õ»£©
+## set / unordered_set
 
-ÏÈ½øºó³ö£¨LIFO£©¡£
+set æœ‰åº O(logn)ï¼Œunordered_set æ— åºä½† O(1)ã€‚
+
+## æŠ€å·§
 
 ```cpp
-stack<int> s;
-s.push(1);
-s.pop();
-s.top();          // È¡Õ»¶¥
-s.empty();
-s.size();
+ios::sync_with_stdio(0); cin.tie(0);
+#define int long long; signed main() { }
+int len = log10(a) + 1;
 ```
-
-## 5. queue£¨¶ÓÁĞ£©
-
-ÏÈ½øÏÈ³ö£¨FIFO£©£¬**²»ÄÜ±éÀú**¡£
-
-```cpp
-queue<int> q;
-q.push(1);
-q.pop();
-q.front();        // ¶ÓÊ×
-q.back();         // ¶ÓÎ²
-```
-
-## 6. set£¨¼¯ºÏ£©
-
-- Î¨Ò»ĞÔ + ÓĞĞòĞÔ£¨ºìºÚÊ÷ÊµÏÖ£¬O(logn)£©
-
-```cpp
-set<int> s;
-s.insert(10);
-s.erase(40);
-s.find(60);                   // ·µ»Øµü´úÆ÷
-s.lower_bound(50);            // >=
-s.upper_bound(50);            // >
-```
-
-## 7. unordered_set£¨ÎŞĞò¼¯ºÏ£©
-
-- Î¨Ò»ĞÔ + ÎŞĞòĞÔ£¨¹şÏ£±íÊµÏÖ£¬O(1)£©
-- ±È set ¸ü¿ì£¬ÊÊºÏ²»ĞèÒªÅÅĞòµÄ³¡¾°
-
-## 8. ³£ÓÃËã·¨
-
-```cpp
-// ÅÅĞò
-sort(v.begin(), v.end());                 // ÉıĞò
-sort(v.begin(), v.end(), greater<int>()); // ½µĞò
-
-// ×Ô¶¨ÒåÅÅĞò
-bool cmp(int a, int b) { return a > b; }
-sort(v.begin(), v.end(), cmp);
-
-// ¶ş·Ö²éÕÒ£¨±ØĞëÓĞĞò£©
-binary_search(v.begin(), v.end(), x);     // ·µ»Ø bool
-
-// ×î´ó×îĞ¡Öµ
-auto min = min_element(v.begin(), v.end());
-auto max = max_element(v.begin(), v.end());
-cout << *min << " " << *max;
-```
-
-## ÊµÓÃĞ¡¼¼ÇÉ
-
-```cpp
-// int À©Õ¹Îª long long
-#define int long long
-signed main() { }
-
-// ¹Ø±ÕÍ¬²½Á÷£¨¼ÓËÙ cin/cout£©
-ios::sync_with_stdio(0);
-cin.tie(0); cout.tie(0);
-
-// ¿ìËÙÈ¡Êı×ÖÎ»Êı
-int len = log10(a) + 1;       // Ê®½øÖÆÎ»Êı
-int len = log2(a) + 1;        // ¶ş½øÖÆÎ»Êı
-
-// ¶ş½øÖÆ±íÊ¾
-string s = bitset<8>(a).to_string();
-```
-

@@ -1,149 +1,57 @@
-# Ëã·¨±Ê¼Ç£ºÅÅĞòÓëËÑË÷
+ï»¿# ç®—æ³•ç¬”è®°ï¼šæ’åºä¸æœç´¢
 
 **2026-06-10**
 
 ---
 
-## ÅÅĞò
-
-### Ñ¡ÔñÅÅĞò
-
-Ã¿ÂÖÑ¡×îĞ¡µÄ·Åµ½Ç°Ãæ¡£ÓÅ»¯£º±ê¼ÇÊÇ·ñÒÑÅÅºÃĞò¡£
+## å†…ç½® sort
 
 ```cpp
-void selection_sort(vector<int> &v) {
-    for (int i = 0; i < v.size() - 1; i++) {
-        int min_pos = i;
-        for (int j = i + 1; j < v.size(); j++)
-            if (v[j] < v[min_pos])
-                min_pos = j;
-        if (min_pos != i) swap(v[i], v[min_pos]);
-    }
-}
+sort(v.begin(), v.end());
+sort(v.begin(), v.end(), greater<int>());
 ```
 
-Ê±¼ä¸´ÔÓ¶È O(n2)£¬Ã¿ÂÖÖ»½»»»Ò»´Î¡£
-
-### Ã°ÅİÅÅĞò
-
-Ã¿ÂÖ°Ñ×î´óµÄ³Áµ½µ×²¿¡£
-
-```cpp
-void bubble_sort(vector<int> &v) {
-    for (int i = 0; i < v.size(); i++) {
-        bool swapped = false;
-        for (int j = 0; j < v.size() - i - 1; j++) {
-            if (v[j] > v[j + 1]) {
-                swap(v[j], v[j + 1]);
-                swapped = true;
-            }
-        }
-        if (!swapped) break;  // ÓÅ»¯£ºÃ»·¢Éú½»»»ËµÃ÷ÒÑÓĞĞò
-    }
-}
-```
-
-### ²åÈëÅÅĞò
-
-Ïñ´òÆË¿ËÃşÅÆ£¬°ÑĞÂÅÆ²åÈëµ½ÒÑÅÅºÃĞòµÄÊÖÅÆÖĞ¡£
-
-```cpp
-void insertion_sort(vector<int> &v) {
-    for (int i = 1; i < v.size(); i++) {
-        int key = v[i];
-        int j = i - 1;
-        while (j >= 0 && key < v[j]) {
-            v[j + 1] = v[j];
-            j--;
-        }
-        v[j + 1] = key;
-    }
-}
-```
-
-### ¿ìËÙÅÅĞò£¨·ÖÖÎ£©
-
-Ñ¡Ò»¸ö»ù×¼µã£¬°ÑÊı×é·Ö³É×óÓÒÁ½²¿·Ö£¬µİ¹éÅÅĞò¡£
+## å¿«é€Ÿæ’åºï¼ˆåˆ†æ²»ï¼‰
 
 ```cpp
 void quick_sort(vector<int> &v, int l, int r) {
     if (l >= r) return;
-    int pivot = v[(l + r) / 2];
-    int i = l, j = r;
+    int pivot = v[(l + r) / 2], i = l, j = r;
     while (i <= j) {
         while (v[i] < pivot) i++;
         while (v[j] > pivot) j--;
-        if (i <= j) {
-            swap(v[i], v[j]);
-            i++; j--;
-        }
+        if (i <= j) { swap(v[i], v[j]); i++; j--; }
     }
     quick_sort(v, l, j);
     quick_sort(v, i, r);
 }
 ```
 
-Æ½¾ù O(nlogn)£¬µ«Êı¾İÒÑÓĞĞòÊ±ÍË»¯Îª O(n2)¡£
-
-### ¹é²¢ÅÅĞò£¨·ÖÖÎ£©
-
-ÏÈ°ÑÊı×é·Ö³Éµ¥¸öÔªËØ£¬ÔÙÁ½Á½ºÏ²¢¡£
+## å½’å¹¶æ’åº
 
 ```cpp
-vector<int> tmp;
 void merge_sort(vector<int> &v, int l, int r) {
     if (l >= r) return;
     int mid = (l + r) / 2;
-    merge_sort(v, l, mid);
-    merge_sort(v, mid + 1, r);
-
-    tmp.clear();
-    tmp.resize(r - l + 1);
-    int i = l, j = mid + 1, k = 0;
-    while (i <= mid && j <= r) {
-        if (v[i] < v[j]) tmp[k++] = v[i++];
-        else tmp[k++] = v[j++];
-    }
-    while (i <= mid) tmp[k++] = v[i++];
-    while (j <= r)   tmp[k++] = v[j++];
-    for (int t = 0; t < k; t++)
-        v[l + t] = tmp[t];
+    merge_sort(v, l, mid); merge_sort(v, mid + 1, r);
+    vector<int> tmp;
+    int i = l, j = mid + 1;
+    while (i <= mid && j <= r)
+        tmp.push_back(v[i] < v[j] ? v[i++] : v[j++]);
+    while (i <= mid) tmp.push_back(v[i++]);
+    while (j <= r) tmp.push_back(v[j++]);
+    for (int t = 0; t < tmp.size(); t++) v[l + t] = tmp[t];
 }
 ```
 
-ÎÈ¶¨£¬O(nlogn)£¬ĞèÒª¶îÍâ¿Õ¼ä¡£
-
-### ÄÚÖÃ sort
-
-¾ºÈüÖĞ×î³£ÓÃµÄ£¬»ìºÏÅÅĞòËã·¨£¬Ê¼ÖÕ O(nlogn)¡£
+## DFS
 
 ```cpp
-sort(v.begin(), v.end());              // ÉıĞò
-sort(v.begin(), v.end(), greater<>()); // ½µĞò
-```
-
----
-
-## ËÑË÷
-
-### DFS£¨Éî¶ÈÓÅÏÈËÑË÷£©
-
-²»×²ÄÏÇ½²»»ØÍ·£¬×ßµ½¾¡Í·ÔÙ»ØËİ¡£
-
-**È«ÅÅÁĞ£º**
-
-```cpp
-const int N = 100;
-int a[N]; bool used[N]; int re[N]; int n;
 void dfs(int x) {
-    if (x == n + 1) {
-        for (int i = 1; i <= n; i++) cout << re[i] << " ";
-        cout << endl; return;
-    }
+    if (x == n + 1) { return; }
     for (int i = 1; i <= n; i++) {
         if (!used[i]) {
-            used[i] = true;
-            re[x] = a[i];
+            used[i] = true; re[x] = a[i];
             dfs(x + 1);
             used[i] = false;
         }
@@ -151,29 +59,11 @@ void dfs(int x) {
 }
 ```
 
-ºËĞÄË¼Ïë£º±ê¼Ç ¡ú µİ¹é ¡ú »ØËİ£¨È¡Ïû±ê¼Ç£©¡£
-
-### BFS£¨¹ã¶ÈÓÅÏÈËÑË÷£©
-
-Ò»²ã²ãÍùÍâÀ©£¬ÊÊºÏÇó×î¶ÌÂ·¾¶¡£
-
-**¶ş²æÊ÷²ãĞò±éÀú£º**
+## BFS
 
 ```cpp
-void bfs(int root) {
-    queue<int> q; q.push(root);
-    while (!q.empty()) {
-        int idx = q.front(); q.pop();
-        cout << a[idx] << " ";
-        if (idx * 2 <= n)     q.push(idx * 2);
-        if (idx * 2 + 1 <= n) q.push(idx * 2 + 1);
-    }
+queue<int> q; q.push(root);
+while (!q.empty()) {
+    int idx = q.front(); q.pop();
 }
 ```
-
-| ÌØĞÔ | DFS | BFS |
-|-----|-----|-----|
-| Êı¾İ½á¹¹ | Õ»£¨µİ¹é£© | ¶ÓÁĞ |
-| ¿Õ¼ä | ½ÏĞ¡ | ½Ï´ó£¨ĞèÒª´æÒ»²ã£© |
-| ÊÊÓÃ | È«ÅÅÁĞ¡¢Á¬Í¨ĞÔ | ×î¶ÌÂ·¾¶¡¢²ãĞò±éÀú |
-

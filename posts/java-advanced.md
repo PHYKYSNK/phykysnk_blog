@@ -1,147 +1,51 @@
-# Java SE Ñ§Ï°±Ê¼Ç£º¸ß¼¶ÌØĞÔ
+ï»¿# Java SE å­¦ä¹ ç¬”è®°ï¼šé«˜çº§ç‰¹æ€§
 
 **2026-06-10**
 
 ---
 
-ÕâÆªÕûÀíÁËÒì³£´¦Àí¡¢IOÁ÷¡¢¶àÏß³Ì¡¢ÍøÂç±à³Ì¡¢·´ÉäÓë×¢½â¡£
-
-## 1. Òì³£´¦Àí
-
-Java µÄÒì³£»úÖÆÈÃ´íÎó´¦Àí¸üÓÅÑÅ¡£
+## 1. å¼‚å¸¸å¤„ç†
 
 ```java
-try {
-    int result = 10 / 0;  // ¿ÉÄÜ³ö´íµÄ´úÂë
-} catch (ArithmeticException e) {
-    System.out.println("³ıÊı²»ÄÜÎª0");
-    e.printStackTrace();
-} finally {
-    System.out.println("ÎŞÂÛÊÇ·ñÒì³£¶¼»áÖ´ĞĞ");
-}
+try { int r = 10 / 0; }
+catch (ArithmeticException e) { e.printStackTrace(); }
+finally { }
 ```
 
-**Òì³£ÌåÏµ£º** Throwable ¡ú Error£¨²»¿É´¦Àí£©ºÍ Exception£¨¿É´¦Àí£©
-- ÔËĞĞÊ±Òì³££ºRuntimeException£¨²»ÓÃÇ¿ÖÆ´¦Àí£©
-- ±àÒëÊ±Òì³££º·Ç RuntimeException£¨±ØĞë´¦Àí£©
+## 2. IO æµ
 
-**throws ºÍ throw£º**
-- `throws`£º·½·¨Ç©ÃûÉÏÉùÃ÷¿ÉÄÜÅ×³öµÄÒì³£
-- `throw`£ºÊÖ¶¯Å×³öÒì³£
+å­—èŠ‚æµï¼šInputStream / OutputStream
+å­—ç¬¦æµï¼šReader / Writer
+ç¼“å†²æµï¼šBufferedReader / BufferedWriterï¼ˆ8KB ç¼“å†²åŒºï¼‰
 
-**try-with-resources£¨JDK7+£©£º** ×Ô¶¯¹Ø±Õ×ÊÔ´
+## 3. å¤šçº¿ç¨‹
 
 ```java
-try (FileInputStream fis = new FileInputStream("file.txt")) {
-    // Ê¹ÓÃÍê×Ô¶¯¹Ø±Õ
-} catch (IOException e) {
-    e.printStackTrace();
-}
-```
-
-## 2. IO Á÷
-
-**·ÖÀà£º**
-- °´·½Ïò£ºÊäÈëÁ÷¡¢Êä³öÁ÷
-- °´µ¥Î»£º×Ö½ÚÁ÷£¨ÍòÄÜ£©¡¢×Ö·ûÁ÷£¨ÎÄ±¾£©
-- °´¹¦ÄÜ£º½ÚµãÁ÷£¨Ô­Ê¼£©¡¢´¦ÀíÁ÷£¨°ü×°£©
-
-**ºËĞÄÀà£º**
-
-| Àà | ËµÃ÷ |
-|----|------|
-| InputStream/OutputStream | ×Ö½ÚÊäÈë/Êä³ö³éÏóÀà |
-| FileInputStream/FileOutputStream | ÎÄ¼ş×Ö½ÚÁ÷ |
-| Reader/Writer | ×Ö·ûÊäÈë/Êä³ö³éÏóÀà |
-| FileReader/FileWriter | ÎÄ¼ş×Ö·ûÁ÷ |
-| BufferedReader/BufferedWriter | »º³å×Ö·ûÁ÷£¨¸ßĞ§£© |
-| BufferedInputStream/BufferedOutputStream | »º³å×Ö½ÚÁ÷£¨¸ßĞ§£© |
-
-**»º³åÁ÷ÎªÊ²Ã´¿ì£¿** ÄÚ²¿ÓĞÒ»¸ö 8192 ×Ö½Ú£¨8KB£©µÄ»º³åÇø£¬¼õÉÙ´ÅÅÌ·ÃÎÊ´ÎÊı¡£
-
-## 3. ¶àÏß³Ì
-
-**ÈıÖÖÊµÏÖ·½Ê½£º**
-
-```java
-// 1. ¼Ì³Ğ Thread
-class MyThread extends Thread {
-    public void run() { }
-}
+// ç»§æ‰¿ Thread
+class MyThread extends Thread { public void run() { } }
 new MyThread().start();
 
-// 2. ÊµÏÖ Runnable
-class MyRunnable implements Runnable {
-    public void run() { }
-}
-new Thread(new MyRunnable()).start();
-
-// 3. Lambda£¨JDK8+£©
+// å®ç° Runnable
 new Thread(() -> { }).start();
 ```
 
-**Ïß³Ì°²È«£º** ¶à¸öÏß³ÌÍ¬Ê±·ÃÎÊ¹²ÏíÊı¾İ¿ÉÄÜµ¼ÖÂÊı¾İ²»Ò»ÖÂ¡£ÓÃ `synchronized` ¼ÓËø¡£
+## 4. ç½‘ç»œç¼–ç¨‹
 
-**Ïß³Ì×´Ì¬£º** NEW ¡ú RUNNABLE ¡ú BLOCKED/WAITING/TIMED_WAITING ¡ú TERMINATED
+TCPï¼ˆé¢å‘è¿æ¥ï¼‰ï¼šServerSocket / Socket
+UDPï¼ˆæ— è¿æ¥ï¼‰ï¼šDatagramSocket / DatagramPacket
 
-## 4. ÍøÂç±à³Ì
-
-**TCP£¨ÃæÏòÁ¬½Ó£¬¿É¿¿£©£º**
-
-```java
-// ·şÎñÆ÷¶Ë
-ServerSocket ss = new ServerSocket(9999);
-Socket s = ss.accept();  // ×èÈûµÈ´ı
-
-// ¿Í»§¶Ë
-Socket s = new Socket("localhost", 9999);
-```
-
-socket ¹ÜµÀÖ»ÄÜ´«×Ö½Ú£¬ËùÒÔĞèÒªÓÃÁ÷À´°ü×°¡£
-
-**TCP Ò»´«¶à£º** ÎªÃ¿¸ö¿Í»§¶Ë´´½¨ĞÂÏß³Ì´¦Àí¡£
-
-**UDP£¨ÎŞÁ¬½Ó£¬¿ìËÙ£©£º**
-- DatagramSocket£ºUDP µÄ Socket
-- DatagramPacket£ºÊı¾İ°ü
-
-| ÌØĞÔ | TCP | UDP |
-|-----|-----|-----|
-| Á¬½Ó | ÃæÏòÁ¬½Ó£¨´òµç»°£© | ÎŞÁ¬½Ó£¨·¢¶ÌĞÅ£© |
-| ¿É¿¿ĞÔ | ¿É¿¿ | ¿ÉÄÜ¶ª°ü |
-| ËÙ¶È | ½ÏÂı | ½Ï¿ì |
-| ÊÊÓÃ | ÎÄ¼ş´«Êä¡¢ÁÄÌì | ÊÓÆµÍ¨»°¡¢ÓÎÏ· |
-
-## 5. ·´ÉäÓë×¢½â
-
-**·´Éä£º** ÔËĞĞÊ±¶¯Ì¬»ñÈ¡ÀàµÄĞÅÏ¢¡¢´´½¨¶ÔÏó¡¢µ÷ÓÃ·½·¨¡£
+## 5. åå°„
 
 ```java
-// »ñÈ¡ Class ¶ÔÏóµÄÈıÖÖ·½Ê½
-Class<?> c1 = Student.class;
-Class<?> c2 = obj.getClass();
-Class<?> c3 = Class.forName("com.example.Student");
-
-// ´´½¨¶ÔÏó
-Object obj = c1.newInstance();
-
-// µ÷ÓÃ·½·¨
-Method m = c1.getMethod("setName", String.class);
-m.invoke(obj, "Ğ¡Óñ");
-
-// ²Ù×÷Ë½ÓĞÊôĞÔ
-Field f = c1.getDeclaredField("age");
-f.setAccessible(true);  // ´òÆÆ·â×°
+Class<?> c = Class.forName("com.example.Student");
+Object obj = c.newInstance();
+Method m = c.getMethod("setName", String.class);
+m.invoke(obj, "å°ç‰");
+Field f = c.getDeclaredField("age");
+f.setAccessible(true);
 f.set(obj, 20);
 ```
 
-**×¢½â£º** ´úÂëÖĞµÄ±ê¼Ç¡£
+## 6. æ³¨è§£
 
-```java
-@Override         // ÖØĞ´·½·¨
-@Deprecated       // ÒÑ¹ıÊ±
-@SuppressWarnings // ÒÖÖÆ¾¯¸æ
-```
-
-×Ô¶¨Òå×¢½âÓÃ `@interface` ¶¨Òå£¬ÅäºÏ `@Target` ºÍ `@Retention` Ö¸¶¨×÷ÓÃ·¶Î§ºÍ±£Áô²ßÂÔ¡£
-
+@Overrideã€@Deprecatedã€è‡ªå®šä¹‰ @interface

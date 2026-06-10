@@ -1,161 +1,61 @@
-# Java SE Ñ§Ï°±Ê¼Ç£ºÃæÏò¶ÔÏó
+ï»¿# Java SE å­¦ä¹ ç¬”è®°ï¼šé¢å‘å¯¹è±¡
 
 **2026-06-10**
 
 ---
 
-ÃæÏò¶ÔÏóÊÇ Java ×îºËĞÄµÄ²¿·Ö¡£ÕâÆªÕûÀíÁËÀàÓë¶ÔÏó¡¢·â×°¡¢¼Ì³Ğ¡¢¶àÌ¬¡¢³éÏóÀàÓë½Ó¿Ú¡£
+## 1. ç±»ä¸å¯¹è±¡
 
-## 1. ÀàÓë¶ÔÏó
-
-ÀàÊÇÄ£°å£¬¶ÔÏóÊÇÊµÀı¡£
+ç±»æ˜¯æ¨¡æ¿ï¼Œå¯¹è±¡æ˜¯å®ä¾‹ã€‚
 
 ```java
 public class Student {
     String name;
     int age;
-
-    // ¹¹Ôì·½·¨£º·½·¨ÃûÓëÀàÃûÏàÍ¬£¬Ã»ÓĞ·µ»ØÖµ
     public Student() { }
-
     public Student(String name, int age) {
-        this.name = name;  // this Ö¸Ïòµ±Ç°¶ÔÏó
+        this.name = name;
         this.age = age;
     }
 }
 ```
 
-**³ÉÔ±±äÁ¿ vs ¾Ö²¿±äÁ¿£º**
-
-| Çø±ğ | ³ÉÔ±±äÁ¿ | ¾Ö²¿±äÁ¿ |
-|-----|---------|---------|
-| Î»ÖÃ | ÀàÖĞ·½·¨Íâ | ·½·¨ÄÚ²¿ |
-| Ä¬ÈÏÖµ | ÓĞÄ¬ÈÏÖµ | ÎŞÄ¬ÈÏÖµ |
-| ×÷ÓÃÓò | Õû¸öÀà | µ±Ç°·½·¨ |
-
-## 2. ·â×°
-
-°Ñ¶«Î÷°üÆğÀ´£¬¶ÔÍâÖ»±©Â¶±ØÒª½Ó¿Ú£¬Òş²ØÄÚ²¿ÊµÏÖ¡£
+## 2. å°è£…
 
 ```java
 public class Person {
-    private String name;  // private Òş²Ø
     private int age;
-
-    // public getter/setter ÊÜ¿Ø·ÃÎÊ
-    public String getName() { return name; }
-
     public void setAge(int age) {
-        if (age < 0 || age > 150) {
-            System.out.println("ÄêÁä²»ºÏ·¨£¡");
-            return;
-        }
+        if (age < 0 || age > 150) return;
         this.age = age;
     }
 }
 ```
 
-·â×°µÄºÃ´¦£ºÊı¾İ°²È«¡¢Ò×ÓÚÎ¬»¤¡£
-
-## 3. ¼Ì³Ğ
-
-×ÓÀà¼Ì³Ğ¸¸Àà£¬»ñµÃ¸¸ÀàµÄÊôĞÔºÍ·½·¨¡£
+## 3. ç»§æ‰¿
 
 ```java
-public class Animal {
-    public void eat() {
-        System.out.println("¶¯ÎïÔÚ³Ô¶«Î÷");
-    }
-}
-
-public class Dog extends Animal {
-    public void bark() {
-        System.out.println("ÍôÍô");
-    }
-}
+public class Animal { public void eat() { } }
+public class Dog extends Animal { public void bark() { } }
 ```
 
-**·½·¨ÖØĞ´£¨Override£©£º** ×ÓÀàÖØĞÂ¶¨Òå¸¸Àà·½·¨
+## 4. å¤šæ€
+
+å¿…è¦æ¡ä»¶ï¼šç»§æ‰¿ + é‡å†™ + çˆ¶ç±»å¼•ç”¨æŒ‡å‘å­ç±»å¯¹è±¡
 
 ```java
-public class Cat extends Animal {
-    @Override
-    public void eat() {
-        System.out.println("Ã¨ÔÚ³ÔÓã");
-    }
-}
-```
-
-**super ¹Ø¼ü×Ö£º** ·ÃÎÊ¸¸Àà³ÉÔ±
-
-```java
-public class Dog extends Animal {
-    @Override
-    public void eat() {
-        super.eat();  // µ÷ÓÃ¸¸Àà·½·¨
-        System.out.println("¹·ÔÚ³Ô¹·Á¸");
-    }
-}
-```
-
-ÌØµã£ºµ¥¼Ì³Ğ£¨Ò»¸öÀàÖ»ÄÜÓĞÒ»¸öÖ±½Ó¸¸Àà£©¡£
-
-## 4. ¶àÌ¬
-
-Í¬Ò»¸ö·½·¨µ÷ÓÃ£¬²»Í¬¶ÔÏó²úÉú²»Í¬ĞĞÎª¡£
-
-**Èı¸ö±ØÒªÌõ¼ş£º** ¼Ì³Ğ + ÖØĞ´ + ¸¸ÀàÒıÓÃÖ¸Ïò×ÓÀà¶ÔÏó
-
-```java
-Animal a1 = new Dog();
-Animal a2 = new Cat();
-a1.eat();  // ¹·ÔÚ³Ô¹·Á¸
-a2.eat();  // Ã¨ÔÚ³ÔÃ¨Á¸
-```
-
-**ÏòÏÂ×ªĞÍ£º** µ÷ÓÃ×ÓÀàÌØÓĞ·½·¨
-
-```java
-if (animal instanceof Dog) {
-    Dog d = (Dog) animal;
+Animal a = new Dog();
+a.eat();
+if (a instanceof Dog) {
+    Dog d = (Dog) a;
     d.bark();
 }
 ```
 
-## 5. ³éÏóÀà
-
-ÓÃ `abstract` ĞŞÊÎ£¬²»ÄÜÖ±½Ó `new`£¬×ÓÀà±ØĞëÖØĞ´ËùÓĞ³éÏó·½·¨¡£
+## 5. æŠ½è±¡ç±»ä¸æ¥å£
 
 ```java
-public abstract class Animal {
-    public abstract void eat();  // ³éÏó·½·¨£¬Ã»ÓĞ·½·¨Ìå
-
-    public void sleep() {        // ¿ÉÒÔÓĞÆÕÍ¨·½·¨
-        System.out.println("Ë¯¾õ");
-    }
-}
+public abstract class Animal { public abstract void eat(); }
+public interface Playable { void play(); }
+public class Dog implements Playable { public void play() { } }
 ```
-
-## 6. ½Ó¿Ú
-
-±È³éÏóÀà¸ü´¿´âµÄ³éÏó£¬ÓÃ `interface` ¶¨Òå£¬ÓÃ `implements` ÊµÏÖ¡£
-
-```java
-public interface Playable {
-    void play();  // Ä¬ÈÏÊÇ³éÏóµÄ
-}
-
-public class Dog implements Playable {
-    @Override
-    public void play() {
-        System.out.println("¹·ÔÚÍæ·ÉÅÌ");
-    }
-}
-```
-
-Ò»¸öÀà¿ÉÒÔÊµÏÖ¶à¸ö½Ó¿Ú£¬ÕâÊÇ¶Ôµ¥¼Ì³ĞµÄ²¹³ä¡£
-
----
-
-*ÏÂÒ»ÆªÕûÀí Java ¸ß¼¶ÌØĞÔ£ºÒì³£¡¢IO¡¢¶àÏß³Ì¡¢ÍøÂç±à³Ì¡£*
-

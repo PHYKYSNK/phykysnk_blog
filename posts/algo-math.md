@@ -1,15 +1,12 @@
-# Ëã·¨±Ê¼Ç£ºÊıÑ§ÓëÊıÂÛ
+ï»¿# ç®—æ³•ç¬”è®°ï¼šæ•°å­¦ä¸æ•°è®º
 
 **2026-06-10**
 
 ---
 
-## ¿ìËÙÃİ
-
-°Ñ O(n) ½µÎª O(logn)¡£
+## å¿«é€Ÿå¹‚
 
 ```cpp
-const int MOD = 1e9 + 7;
 long long qpow(long long a, long long b) {
     long long res = 1;
     while (b) {
@@ -21,94 +18,30 @@ long long qpow(long long a, long long b) {
 }
 ```
 
-Ô­Àí£º°ÑÖ¸Êı b Ğ´³É¶ş½øÖÆ£¬Ã¿´ÎÈ¡×îºóÒ»Î»ÅĞ¶ÏÊÇ·ñĞèÒª³Ë¡£
-
-## ×î´ó¹«Ô¼Êı
-
-**Õ·×ªÏà³ı·¨£¨Å·¼¸ÀïµÃËã·¨£©£º**
+## æœ€å¤§å…¬çº¦æ•°
 
 ```cpp
-int gcd(int a, int b) {
-    return b == 0 ? a : gcd(b, a % b);
-}
+int gcd(int a, int b) { return b == 0 ? a : gcd(b, a % b); }
 ```
 
-×îĞ¡¹«±¶Êı£º`lcm(a, b) = a / gcd(a, b) * b`
-
-## ËØÊıÉ¸
-
-**ÊÔ³ı·¨£¨ÅĞ¶Ïµ¥¸öÊı£©£º**
+## ç´ æ•°ç­›ï¼ˆæ¬§æ‹‰ç­›ï¼‰
 
 ```cpp
-bool is_prime(int x) {
-    if (x < 2) return false;
-    for (int i = 2; i <= x / i; i++)
-        if (x % i == 0) return false;
-    return true;
-}
-```
-
-**°£ÊÏÉ¸£¨1e6 ÒÔÄÚ£©£º** ±ê¼ÇËØÊıµÄ±¶Êı¡£
-
-```cpp
-vector<int> sieve(int n) {
-    vector<bool> v(n + 1, true);
-    vector<int> primes;
-    v[0] = v[1] = false;
-    for (int i = 2; i <= n; i++) {
-        if (!v[i]) continue;
-        primes.push_back(i);
-        for (int j = 2 * i; j <= n; j += i)
-            v[j] = false;
-    }
-    return primes;
-}
-```
-
-**Å·À­É¸£¨ÏßĞÔÉ¸£¬ÍÆ¼ö£©£º** Ã¿¸öºÏÊıÖ»±»É¸Ò»´Î¡£
-
-```cpp
-const int N = 1e5 + 10;
-vector<bool> is_prime(N, true);
-vector<int> primes;
+vector<bool> is(N, true); vector<int> p;
 void euler(int n) {
-    is_prime[0] = is_prime[1] = false;
+    is[0] = is[1] = false;
     for (int i = 2; i <= n; i++) {
-        if (is_prime[i]) primes.push_back(i);
-        for (int p : primes) {
-            if (p * i > n) break;
-            is_prime[p * i] = false;
-            if (i % p == 0) break;  // ¹Ø¼üÓÅ»¯
+        if (is[i]) p.push_back(i);
+        for (int pi : p) {
+            if (pi * i > n) break;
+            is[pi * i] = false;
+            if (i % pi == 0) break;
         }
     }
 }
 ```
 
-## ÒòÊı
-
-**ÇóËùÓĞÒòÊı£º**
-
-```cpp
-vector<int> get_factors(int x) {
-    vector<int> res;
-    for (int i = 1; i <= x / i; i++) {
-        if (x % i == 0) {
-            res.push_back(i);
-            if (i != x / i) res.push_back(x / i);
-        }
-    }
-    sort(res.begin(), res.end());
-    return res;
-}
-```
-
-**ÒòÊı¸öÊı£º** ·Ö½âÖÊÒòÊıºó£¬Ã¿¸öÖ¸Êı +1 ÔÙÏà³Ë¡£
-
-## Å·À­º¯Êı
-
-¦Õ(n) = 1~n ÖĞÓë n »¥ÖÊµÄÊıµÄ¸öÊı¡£
-
-¹«Ê½£º¦Õ(n) = n ¡Á ¦°(1 - 1/p_i)£¬ÆäÖĞ p_i ÊÇ n µÄÖÊÒòÊı¡£
+## æ¬§æ‹‰å‡½æ•°
 
 ```cpp
 int phi(int n) {
@@ -124,39 +57,6 @@ int phi(int n) {
 }
 ```
 
-## ¸ß¾«¶ÈÔËËã
+## é«˜ç²¾åº¦
 
-´óÊıÔËËã£¬ÓÃÊı×é»ò vector Ä£ÄâÊúÊ½¡£
-
-**¸ß¾«¶È¼Ó·¨£º**
-1. ×Ö·û´®µ¹Ğò×ªÊı×é
-2. ÖğÎ»Ïà¼Ó£¬´¦Àí½øÎ»
-3. È¥µôÇ°µ¼Áã£¬µ¹ĞòÊä³ö
-
-**¸ß¾«¶È¼õ·¨£º**
-1. ±È½Ï´óĞ¡£¬È·±£´ó¼õĞ¡
-2. ²»¹»¼õÊ±½èÎ»
-3. ´¦Àí¸ººÅºÍÇ°µ¼Áã
-
-**¸ß¾«¶È³Ë·¨£¨¸ß ¡Á µÍ£©£º**
-1. ÖğÎ»³Ë
-2. Í³Ò»½øÎ»
-
-**¸ß¾«¶È³Ë·¨£¨¸ß ¡Á ¸ß£©£º**
-1. Ë«²ãÑ­»·Ïà³Ë
-2. ´íÎ»Ïà¼Ó
-3. Í³Ò»½øÎ»
-
-## ÆäËû³£ÓÃ
-
-**ÈòÄêÅĞ¶Ï£º**
-
-```cpp
-if ((y % 4 == 0 && y % 100 != 0) || y % 400 == 0)
-    // ÊÇÈòÄê
-```
-
-**Èı½ÇĞÎÅĞ¶Ï£º** ÈÎÒâÁ½±ßÖ®ºÍ´óÓÚµÚÈı±ß¡£
-
-**Î¨Ò»·Ö½â¶¨Àí£º** ÈÎºÎ´óÓÚ 1 µÄ×ÔÈ»Êı¶¼¿ÉÒÔÎ¨Ò»·Ö½â³ÉÓĞÏŞ¸öËØÊıµÄ³Ë»ı¡£
-
+ç”¨æ•°ç»„æ¨¡æ‹Ÿç«–å¼ï¼Œæ³¨æ„å€’åºå­˜æ”¾å’Œè¿›ä½å¤„ç†ã€‚
