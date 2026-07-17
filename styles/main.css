@@ -16,7 +16,7 @@
   --tag-bg: #2a2d35; --code-bg: #1e2128; --code-text: #c8c8c8;
   --shadow: 0 1px 4px rgba(0,0,0,0.3); --shadow-hover: 0 4px 16px rgba(0,0,0,0.4);
 }
-body { font-family: -apple-system,"Noto Sans SC","PingFang SC","Microsoft YaHei","Helvetica Neue",sans-serif; font-size: 16px; line-height: 1.8; background-image: url('/preview.gif'); background-repeat: repeat; background-size: 192px; color: var(--text); -webkit-font-smoothing: antialiased; transition: color var(--transition); }
+body { font-family: -apple-system,"Noto Sans SC","PingFang SC","Microsoft YaHei","Helvetica Neue",sans-serif; font-size: 16px; line-height: 1.8; background-color: #2b3a61; background-image: url('/preview.gif'); background-repeat: no-repeat; background-size: cover; background-position: center; background-attachment: fixed; color: var(--text); -webkit-font-smoothing: antialiased; transition: color var(--transition); }
 ::selection { background: var(--accent); color: #fff; }
 .container { max-width: 720px; margin: 0 auto; padding: 0 24px; }
 .hidden { display: none !important; }
