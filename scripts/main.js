@@ -15,6 +15,8 @@
   var tocSidebar = document.getElementById('post-toc');
   var tocToggle = document.getElementById('toc-toggle');
   var tocNav = document.getElementById('toc-nav');
+  var progressBar = document.getElementById('reading-progress');
+  var backToTop = document.getElementById('back-to-top');
 
   function initTheme() {
     var t = localStorage.getItem('theme') || 'light';
@@ -36,6 +38,24 @@
       link.href = t === 'dark'
         ? 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css'
         : 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css';
+    }
+  }
+
+  function updateScrollUI() {
+    if (!progressBar) return;
+    if (postView.classList.contains('hidden')) {
+      progressBar.style.width = '0%';
+    } else {
+      var st = window.scrollY || document.documentElement.scrollTop;
+      var sh = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      progressBar.style.width = Math.min(st / sh * 100, 100) + '%';
+    }
+    if (backToTop) {
+      if ((window.scrollY || document.documentElement.scrollTop) > 300) {
+        backToTop.classList.add('visible');
+      } else {
+        backToTop.classList.remove('visible');
+      }
     }
   }
 
@@ -165,6 +185,45 @@
     }
   }
 
+  function renderPostNav(currentSlug) {
+    var idx = posts.findIndex(function(p) { return p.slug === currentSlug; });
+    if (idx === -1) return;
+    var prev = idx > 0 ? posts[idx - 1] : null;
+    var next = idx < posts.length - 1 ? posts[idx + 1] : null;
+    if (!prev && !next) return;
+    var h = '<div class="post-nav">';
+    if (prev) {
+      h += '<a href="#/post/' + prev.slug + '" class="post-nav-link prev">';
+      h += '<span class="post-nav-label">&larr; 上一篇</span>';
+      h += '<span class="post-nav-title">' + esc(prev.title) + '</span></a>';
+    } else {
+      h += '<div class="post-nav-empty"></div>';
+    }
+    if (next) {
+      h += '<a href="#/post/' + next.slug + '" class="post-nav-link next">';
+      h += '<span class="post-nav-label">下一篇 &rarr;</span>';
+      h += '<span class="post-nav-title">' + esc(next.title) + '</span></a>';
+    } else {
+      h += '<div class="post-nav-empty"></div>';
+    }
+    h += '</div>';
+    postContent.insertAdjacentHTML('beforeend', h);
+  }
+
+  function animateCards() {
+    var cards = document.querySelectorAll('.post-card');
+    if (!cards.length || !('IntersectionObserver' in window)) return;
+    var observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('card-visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { rootMargin: '0px 0px -60px 0px' });
+    cards.forEach(function(card, i) { card.style.transitionDelay = (i * 0.08) + 's'; observer.observe(card); });
+  }
+
   function renderPosts() {
     var list = posts.slice();
     if (currentTag) list = list.filter(function(p) { return p.tags.indexOf(currentTag) !== -1; });
@@ -187,6 +246,7 @@
     document.querySelectorAll('.post-card-tag').forEach(function(el) {
       el.addEventListener('click', function(e) { e.preventDefault(); e.stopPropagation(); currentTag = el.getAttribute('data-tag'); renderTags(); renderPosts(); });
     });
+    animateCards();
   }
 
   function renderTags() {
@@ -226,6 +286,8 @@
       highlightCodeBlocks();
       addCopyButtons();
       generateTOC(slug);
+      renderPostNav(slug);
+      updateScrollUI();
     }).catch(function() { postContent.innerHTML = '<p class="empty-state">文章加载失败</p>'; });
   }
 
@@ -270,6 +332,10 @@
     fetch('posts/index.json').then(function(r) { return r.json(); }).then(function(data) { posts = data; renderTags(); renderPosts(); }).catch(function() { postList.innerHTML = '<p class="empty-state">文章列表加载失败</p>'; });
     searchInput.addEventListener('input', renderPosts);
     window.addEventListener('hashchange', handleRoute);
+    window.addEventListener('scroll', updateScrollUI, { passive: true });
+    if (backToTop) {
+      backToTop.addEventListener('click', function() { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+    }
     handleRoute();
   }
 
