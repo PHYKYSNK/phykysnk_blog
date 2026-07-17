@@ -82,13 +82,31 @@ body { font-family: -apple-system,"Noto Sans SC","PingFang SC","Microsoft YaHei"
 .code-copy-btn:hover { border-color: var(--accent); color: var(--accent); }
 .code-copy-btn.copied { border-color: #2e7d32; color: #2e7d32; background: #e8f5e9; }
 
-/* === 文章目录 TOC === */
-.toc-wrap { background: var(--tag-bg); border-radius: 8px; padding: 16px 20px; margin: 0 0 24px; font-size: 0.9em; }
-.toc-title { font-weight: 600; margin-bottom: 8px; color: var(--text); font-size: 0.95em; }
-.toc-nav { display: flex; flex-direction: column; gap: 4px; }
-.toc-link { color: var(--text-secondary); text-decoration: none; padding: 3px 8px; border-radius: 4px; transition: all var(--transition); border-left: 2px solid transparent; }
-.toc-link:hover { color: var(--accent); background: var(--bg-card-hover); }
-.toc-link.toc-active { color: var(--accent); border-left-color: var(--accent); font-weight: 500; }
+/* === 文章目录 TOC — 左侧可折叠侧边栏 === */
+.post-layout { position: relative; min-height: 200px; }
+
+/* 折叠状态：小浮标 */
+.post-toc.collapsed .toc-sidebar-inner { display: none; }
+.toc-toggle-btn { position: absolute; top: 0; left: -44px; z-index: 20; width: 36px; height: 36px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-card); cursor: pointer; font-size: 1em; display: flex; align-items: center; justify-content: center; transition: all var(--transition); box-shadow: var(--shadow); }
+.toc-toggle-btn:hover { border-color: var(--accent); box-shadow: var(--shadow-hover); }
+
+/* 展开状态：左浮动面板 */
+.post-toc.expanded { position: absolute; left: -44px; top: 0; width: 180px; z-index: 15; }
+.post-toc.expanded .toc-toggle-btn { position: static; margin-bottom: 8px; width: 100%; height: auto; padding: 6px 10px; border-radius: 6px; justify-content: flex-start; gap: 4px; font-size: 0.85em; }
+.post-toc.expanded .toc-sidebar-inner { display: block; background: var(--bg-card); border: 1px solid var(--border-light); border-radius: var(--radius); padding: 14px; font-size: 0.85em; box-shadow: var(--shadow); }
+.toc-sidebar-header { margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid var(--border-light); }
+.toc-sidebar-title { font-weight: 600; font-size: 0.95em; color: var(--text); }
+.toc-nav { display: flex; flex-direction: column; gap: 2px; max-height: 50vh; overflow-y: auto; }
+.toc-link { display: block; color: var(--text-secondary); text-decoration: none; padding: 3px 8px; border-radius: 4px; transition: all var(--transition); border-left: 2px solid transparent; font-size: 0.95em; line-height: 1.5; }
+.toc-link:hover { color: var(--accent); background: var(--tag-bg); }
+.toc-link.toc-active { color: var(--accent); border-left-color: var(--accent); font-weight: 500; background: var(--tag-bg); }
+
+/* 移动端：侧边栏改为顶部抽屉 */
+@media (max-width: 768px) {
+  .toc-toggle-btn { left: 0; position: static; margin-bottom: 8px; width: 100%; }
+  .post-toc.expanded { position: static; width: 100%; }
+  .post-toc.expanded .toc-sidebar-inner { max-height: 40vh; overflow-y: auto; }
+}
 .site-footer { border-top: 1px solid var(--border-light); padding: 24px 0; text-align: center; font-size: 0.85em; color: var(--text-secondary); }
 .empty-state { text-align: center; padding: 60px 20px; color: var(--text-secondary); }
 .loading { text-align: center; padding: 40px; color: var(--text-secondary); }

@@ -12,6 +12,9 @@
   var tagFilter = document.getElementById('tag-filter');
   var searchInput = document.getElementById('search-input');
   var themeToggle = document.getElementById('theme-toggle');
+  var tocSidebar = document.getElementById('post-toc');
+  var tocToggle = document.getElementById('toc-toggle');
+  var tocNav = document.getElementById('toc-nav');
 
   function initTheme() {
     var t = localStorage.getItem('theme') || 'light';
@@ -95,34 +98,58 @@
     });
   }
 
-  function generateTOC() {
+  function generateTOC(currentSlug) {
+    if (!tocNav) return;
+    tocNav.innerHTML = '';
     var headings = postContent.querySelectorAll('.post-content h2, .post-content h3');
-    if (headings.length < 2) return;
-    var tocHTML = '<div class="toc-wrap"><div class="toc-title">目录</div><nav class="toc-nav">';
+    if (headings.length < 2) { tocSidebar.classList.add('hidden'); return; }
+    tocSidebar.classList.remove('hidden');
+
+    // Assign IDs to headings
     headings.forEach(function(h, i) {
-      if (!h.id) h.id = 'toc-' + i;
-      var indent = h.tagName === 'H3' ? ' style="padding-left: 16px;"' : '';
-      tocHTML += '<a href="#' + h.id + '" class="toc-link"' + indent + '>' + esc(h.textContent) + '</a>';
+      if (!h.id) h.id = 'toc-h-' + i;
     });
-    tocHTML += '</nav></div>';
-    var metaBar = postContent.querySelector('.post-meta-bar');
-    if (metaBar) {
-      metaBar.insertAdjacentHTML('afterend', tocHTML);
-    }
+
+    // Build TOC nav links
+    headings.forEach(function(h, i) {
+      var link = document.createElement('a');
+      link.className = 'toc-link';
+      if (h.tagName === 'H3') link.style.paddingLeft = '20px';
+      link.textContent = h.textContent;
+      link.href = '#';
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        var target = document.getElementById(h.id);
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          history.replaceState(null, '', window.location.pathname + window.location.search + '#/post/' + currentSlug);
+        }
+      });
+      tocNav.appendChild(link);
+    });
+
     // IntersectionObserver scroll spy
-    if (headings.length && 'IntersectionObserver' in window) {
-      var tocLinks = document.querySelectorAll('.toc-link');
+    if ('IntersectionObserver' in window) {
+      var tocLinks = tocNav.querySelectorAll('.toc-link');
       var observer = new IntersectionObserver(function(entries) {
         entries.forEach(function(entry) {
           if (entry.isIntersecting) {
             tocLinks.forEach(function(l) { l.classList.remove('toc-active'); });
-            var active = document.querySelector('.toc-link[href="#' + entry.target.id + '"]');
-            if (active) active.classList.add('toc-active');
+            var idx = Array.prototype.indexOf.call(headings, entry.target);
+            if (idx >= 0 && tocLinks[idx]) tocLinks[idx].classList.add('toc-active');
           }
         });
       }, { rootMargin: '-60px 0px -80% 0px' });
       headings.forEach(function(h) { observer.observe(h); });
     }
+
+    // Toggle expand/collapse
+    tocToggle.addEventListener('click', function(e) {
+      e.stopPropagation();
+      tocSidebar.classList.toggle('expanded');
+      tocSidebar.classList.toggle('collapsed');
+      tocToggle.textContent = tocSidebar.classList.contains('expanded') ? '×' : '📖';
+    });
   }
 
   function renderPosts() {
@@ -173,6 +200,10 @@
     var post = posts.find(function(p) { return p.slug === slug; });
     if (!post) { postContent.innerHTML = '<p class="empty-state">文章未找到</p>'; return; }
     fetch('posts/' + slug + '.md').then(function(r) { return r.text(); }).then(function(md) {
+      // Reset TOC to collapsed
+      tocSidebar.classList.add('collapsed');
+      tocSidebar.classList.remove('expanded');
+      if (tocToggle) tocToggle.textContent = '📖';
       var metaHTML = '<span class="meta-date">' + post.date + '</span>';
       if (post.updatedAt && post.updatedAt !== post.date) {
         metaHTML += ' · <span class="meta-updated">更新于 ' + post.updatedAt + '</span>';
@@ -181,7 +212,7 @@
       postContent.innerHTML = '<h1>' + esc(post.title) + '</h1><div class="post-meta-bar">' + metaHTML + '</div>' + marked.parse(md);
       highlightCodeBlocks();
       addCopyButtons();
-      generateTOC();
+      generateTOC(slug);
     }).catch(function() { postContent.innerHTML = '<p class="empty-state">文章加载失败</p>'; });
   }
 

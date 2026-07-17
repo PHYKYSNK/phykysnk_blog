@@ -38,7 +38,18 @@
   </section>
   <article id="post-view" class="hidden">
     <a href="#/" class="back-link">&larr; 返回</a>
-    <div id="post-content" class="post-content"></div>
+    <div class="post-layout">
+      <aside id="post-toc" class="post-toc collapsed">
+        <button id="toc-toggle" class="toc-toggle-btn" aria-label="展开目录">📖</button>
+        <div class="toc-sidebar-inner">
+          <div class="toc-sidebar-header">
+            <span class="toc-sidebar-title">目录</span>
+          </div>
+          <nav id="toc-nav" class="toc-nav"></nav>
+        </div>
+      </aside>
+      <div id="post-content" class="post-content"></div>
+    </div>
   </article>
   <article id="about-view" class="hidden">
     <a href="#/" class="back-link">&larr; 返回</a>
