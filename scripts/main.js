@@ -16,6 +16,7 @@
   function initTheme() {
     var t = localStorage.getItem('theme') || 'light';
     document.documentElement.setAttribute('data-theme', t);
+    setHLJSTheme(t);
   }
 
   function toggleTheme() {
@@ -23,9 +24,106 @@
     var next = cur === 'light' ? 'dark' : 'light';
     document.documentElement.setAttribute('data-theme', next);
     localStorage.setItem('theme', next);
+    setHLJSTheme(next);
+  }
+
+  function setHLJSTheme(t) {
+    var link = document.getElementById('hljs-theme-link');
+    if (link) {
+      link.href = t === 'dark'
+        ? 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css'
+        : 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css';
+    }
   }
 
   function esc(s) { var d = document.createElement('div'); d.appendChild(document.createTextNode(s)); return d.innerHTML; }
+
+  function initMarked() {
+    if (typeof marked !== 'undefined' && typeof hljs !== 'undefined') {
+      marked.setOptions({
+        langPrefix: 'hljs language-',
+        highlight: function(code, lang) {
+          if (lang && hljs.getLanguage(lang)) {
+            try { return hljs.highlight(code, { language: lang }).value; } catch(e) { return code; }
+          }
+          return code;
+        }
+      });
+    }
+  }
+
+  function highlightCodeBlocks() {
+    postContent.querySelectorAll('pre code').forEach(function(block) {
+      hljs.highlightElement(block);
+    });
+  }
+
+  function addCopyButtons() {
+    postContent.querySelectorAll('pre').forEach(function(pre) {
+      if (pre.closest('.code-block-wrap')) return;
+      var wrapper = document.createElement('div');
+      wrapper.className = 'code-block-wrap';
+      pre.parentNode.insertBefore(wrapper, pre);
+      wrapper.appendChild(pre);
+      var toolbar = document.createElement('div');
+      toolbar.className = 'code-block-toolbar';
+      var code = pre.querySelector('code');
+      if (code) {
+        var langMatch = code.className.match(/language-(\w+)/);
+        if (langMatch) {
+          var label = document.createElement('span');
+          label.className = 'code-lang-label';
+          label.textContent = langMatch[1];
+          toolbar.appendChild(label);
+        }
+      }
+      var btn = document.createElement('button');
+      btn.className = 'code-copy-btn';
+      btn.textContent = '复制';
+      btn.addEventListener('click', function() {
+        var text = pre.textContent;
+        navigator.clipboard.writeText(text).then(function() {
+          btn.textContent = '已复制';
+          btn.classList.add('copied');
+          setTimeout(function() { btn.textContent = '复制'; btn.classList.remove('copied'); }, 2000);
+        }).catch(function() {
+          btn.textContent = '复制失败';
+        });
+      });
+      toolbar.appendChild(btn);
+      wrapper.appendChild(toolbar);
+    });
+  }
+
+  function generateTOC() {
+    var headings = postContent.querySelectorAll('.post-content h2, .post-content h3');
+    if (headings.length < 2) return;
+    var tocHTML = '<div class="toc-wrap"><div class="toc-title">目录</div><nav class="toc-nav">';
+    headings.forEach(function(h, i) {
+      if (!h.id) h.id = 'toc-' + i;
+      var indent = h.tagName === 'H3' ? ' style="padding-left: 16px;"' : '';
+      tocHTML += '<a href="#' + h.id + '" class="toc-link"' + indent + '>' + esc(h.textContent) + '</a>';
+    });
+    tocHTML += '</nav></div>';
+    var metaBar = postContent.querySelector('.post-meta-bar');
+    if (metaBar) {
+      metaBar.insertAdjacentHTML('afterend', tocHTML);
+    }
+    // IntersectionObserver scroll spy
+    if (headings.length && 'IntersectionObserver' in window) {
+      var tocLinks = document.querySelectorAll('.toc-link');
+      var observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          if (entry.isIntersecting) {
+            tocLinks.forEach(function(l) { l.classList.remove('toc-active'); });
+            var active = document.querySelector('.toc-link[href="#' + entry.target.id + '"]');
+            if (active) active.classList.add('toc-active');
+          }
+        });
+      }, { rootMargin: '-60px 0px -80% 0px' });
+      headings.forEach(function(h) { observer.observe(h); });
+    }
+  }
 
   function renderPosts() {
     var list = posts.slice();
@@ -75,7 +173,15 @@
     var post = posts.find(function(p) { return p.slug === slug; });
     if (!post) { postContent.innerHTML = '<p class="empty-state">文章未找到</p>'; return; }
     fetch('posts/' + slug + '.md').then(function(r) { return r.text(); }).then(function(md) {
-      postContent.innerHTML = '<h1>' + esc(post.title) + '</h1><div class="post-meta-bar">' + post.date + (post.tags.length ? ' · ' + post.tags.map(function(t) { return '<span class="post-card-tag" data-tag="' + esc(t) + '">' + esc(t) + '</span>'; }).join(', ') : '') + '</div>' + marked.parse(md);
+      var metaHTML = '<span class="meta-date">' + post.date + '</span>';
+      if (post.updatedAt && post.updatedAt !== post.date) {
+        metaHTML += ' · <span class="meta-updated">更新于 ' + post.updatedAt + '</span>';
+      }
+      metaHTML += (post.tags.length ? ' · ' + post.tags.map(function(t) { return '<span class="post-card-tag" data-tag="' + esc(t) + '">' + esc(t) + '</span>'; }).join(', ') : '');
+      postContent.innerHTML = '<h1>' + esc(post.title) + '</h1><div class="post-meta-bar">' + metaHTML + '</div>' + marked.parse(md);
+      highlightCodeBlocks();
+      addCopyButtons();
+      generateTOC();
     }).catch(function() { postContent.innerHTML = '<p class="empty-state">文章加载失败</p>'; });
   }
 
@@ -87,7 +193,7 @@
 
   function renderChangelog(data) {
     if (!data || !data.length) { changelogList.innerHTML = '<p class="empty-state">暂无记录</p>'; return; }
-    var badgeMap = { '初始化': 'init', '新增': 'add', '修复': 'fix', '批量导入': 'batch', '更新': 'add' };
+    var badgeMap = { '初始化': 'init', '新增': 'add', '修复': 'fix', '批量导入': 'batch', '更新': 'add', '优化': 'update' };
     var h = '', lastMonth = '';
     data.slice().reverse().forEach(function(e) {
       var month = e.date.slice(0, 7);
@@ -115,6 +221,7 @@
 
   function init() {
     initTheme();
+    initMarked();
     themeToggle.addEventListener('click', toggleTheme);
     fetch('posts/index.json').then(function(r) { return r.json(); }).then(function(data) { posts = data; renderTags(); renderPosts(); }).catch(function() { postList.innerHTML = '<p class="empty-state">文章列表加载失败</p>'; });
     searchInput.addEventListener('input', renderPosts);

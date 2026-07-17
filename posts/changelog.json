@@ -28,5 +28,11 @@
     "type": "新增",
     "description": "上线更新日志功能，支持时间线展示博客变更记录；补全 index.json 中缺失的文章条目，优化数据完整性",
     "slug": null
+  },
+  {
+    "date": "2026-07-17",
+    "type": "优化",
+    "description": "代码语法高亮（highlight.js 双主题随暗色模式自动切换）、一键复制代码、语言标签、文章目录 TOC（IntersectionObserver 滚动高亮）、信息栏样式优化、删除正文重复日期",
+    "slug": null
   }
 ]
