@@ -27,14 +27,24 @@
 
 <main class="container">
   <section id="home-view">
-    <div class="home-header">
-      <h1 class="home-title">学习日志</h1>
-      <p class="home-subtitle">记录每一步成长</p>
-      <div class="search-wrap">
-        <input type="search" id="search-input" placeholder="搜索文章..." aria-label="搜索文章">
+    <div class="site-hero">
+      <div class="site-hero-avatar">
+        <img src="preview.gif" alt="头像" />
       </div>
-      <div id="tag-filter" class="tag-filter"></div>
+      <div class="site-hero-text">
+        <h1 class="site-hero-title">你好，我是 phykysnk</h1>
+        <p class="site-hero-subtitle">软件工程学生 · 记录代码与日常</p>
+        <div class="site-hero-links">
+          <a href="https://github.com/PHYKYSNK" target="_blank" rel="noopener" class="site-hero-link">GitHub</a>
+          <a href="#/changelog" class="site-hero-link">更新日志</a>
+          <a href="#/about" class="site-hero-link">关于我</a>
+        </div>
+      </div>
     </div>
+    <div class="search-wrap">
+      <input type="search" id="search-input" placeholder="搜索文章..." aria-label="搜索文章">
+    </div>
+    <div id="tag-filter" class="tag-filter"></div>
     <div id="post-list" class="post-list"></div>
   </section>
   <article id="post-view" class="hidden">
@@ -55,6 +65,15 @@
   </article>
   <article id="about-view" class="hidden">
     <a href="#/" class="back-link">&larr; 返回</a>
+    <div class="site-hero site-hero-compact">
+      <div class="site-hero-avatar">
+        <img src="preview.gif" alt="头像" />
+      </div>
+      <div class="site-hero-text">
+        <h1 class="site-hero-title">关于我</h1>
+        <p class="site-hero-subtitle">软件工程学生 · 记录代码与日常</p>
+      </div>
+    </div>
     <div id="about-content" class="post-content"></div>
   </article>
   <section id="changelog-view" class="hidden">
