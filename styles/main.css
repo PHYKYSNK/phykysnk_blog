@@ -39,19 +39,24 @@ body { font-family: -apple-system,"Noto Sans SC","PingFang SC","Microsoft YaHei"
 .home-title { font-size: 2em; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 8px; }
 .home-subtitle { font-size: 1em; color: var(--text-secondary); margin-bottom: 28px; }
 
-/* === 个人 Hero 区 === */
-.site-hero { display: flex; align-items: center; gap: 24px; padding: 40px 0 32px; }
-.site-hero-avatar { flex-shrink: 0; width: 140px; height: 140px; border-radius: 50%; overflow: hidden; background: var(--tag-bg); box-shadow: var(--shadow); border: 3px solid var(--bg-card); }
-.site-hero-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.site-hero-text { flex: 1; min-width: 0; }
-.site-hero-title { font-size: 1.6em; font-weight: 700; letter-spacing: -0.01em; margin-bottom: 6px; line-height: 1.3; }
-.site-hero-subtitle { font-size: 0.95em; color: var(--text-secondary); margin-bottom: 12px; }
-.site-hero-links { display: flex; flex-wrap: wrap; gap: 8px; }
-.site-hero-link { font-size: 0.85em; padding: 4px 14px; border: 1px solid var(--border); border-radius: 20px; color: var(--text-secondary); text-decoration: none; transition: all var(--transition); }
-.site-hero-link:hover { border-color: var(--accent); color: var(--accent); background: var(--tag-bg); }
-.site-hero-compact { padding: 24px 0 20px; }
-.site-hero-compact .site-hero-avatar { width: 80px; height: 80px; }
+/* === 个人 Hero 区（背景图版） === */
+.site-hero { position: relative; overflow: hidden; min-height: 260px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius); margin: 24px 0 28px; }
+.site-hero-bg { position: absolute; inset: 0; background: url('/preview.gif') center/cover no-repeat; z-index: 0; }
+.site-hero-bg::after { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.35) 100%); }
+.site-hero-content { position: relative; z-index: 1; text-align: center; padding: 40px 24px; }
+.site-hero-title { font-size: 1.8em; font-weight: 700; color: #fff; letter-spacing: -0.01em; margin-bottom: 8px; text-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+.site-hero-subtitle { font-size: 1em; color: rgba(255,255,255,0.8); margin-bottom: 16px; }
+.site-hero-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+.site-hero-link { font-size: 0.88em; padding: 6px 18px; border: 1px solid rgba(255,255,255,0.4); border-radius: 20px; color: #fff; text-decoration: none; transition: all var(--transition); backdrop-filter: blur(4px); background: rgba(255,255,255,0.1); }
+.site-hero-link:hover { border-color: #fff; background: rgba(255,255,255,0.25); color: #fff; }
+
+/* 紧凑版（关于页） */
+.site-hero-compact { min-height: 160px; margin: 0 0 20px; }
+.site-hero-compact .site-hero-content { padding: 28px 24px; }
 .site-hero-compact .site-hero-title { font-size: 1.4em; }
+
+/* 暗色模式适配 */
+[data-theme="dark"] .site-hero-bg::after { background: linear-gradient(135deg, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.45) 100%); }
 .search-wrap { max-width: 400px; margin: 0 auto 20px; }
 #search-input { width: 100%; padding: 10px 16px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.95em; font-family: inherit; background: var(--bg-card); color: var(--text); outline: none; transition: border-color var(--transition), box-shadow var(--transition); }
 #search-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(155,107,80,0.15); }
@@ -209,4 +214,8 @@ body { font-family: -apple-system,"Noto Sans SC","PingFang SC","Microsoft YaHei"
   .site-hero { gap: 16px; padding: 28px 0 20px; }
   .site-hero-avatar { width: 100px; height: 100px; }
   .site-hero-title { font-size: 1.3em; }
+  .site-hero { min-height: 200px; margin: 16px 0 20px; }
+  .site-hero-content { padding: 28px 16px; }
+  .site-hero-title { font-size: 1.4em; }
+  .site-hero-compact { min-height: 140px; }
 }
