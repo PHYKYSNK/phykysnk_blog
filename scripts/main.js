@@ -144,12 +144,25 @@
     }
 
     // Toggle expand/collapse
+    var tocOverlay = document.getElementById('toc-overlay');
+    function closeTOC() {
+      tocSidebar.classList.remove('expanded');
+      tocSidebar.classList.add('collapsed');
+      tocToggle.textContent = '📖';
+    }
     tocToggle.addEventListener('click', function(e) {
       e.stopPropagation();
-      tocSidebar.classList.toggle('expanded');
-      tocSidebar.classList.toggle('collapsed');
-      tocToggle.textContent = tocSidebar.classList.contains('expanded') ? '×' : '📖';
+      if (tocSidebar.classList.contains('expanded')) {
+        closeTOC();
+      } else {
+        tocSidebar.classList.remove('collapsed');
+        tocSidebar.classList.add('expanded');
+        tocToggle.textContent = '×';
+      }
     });
+    if (tocOverlay) {
+      tocOverlay.addEventListener('click', closeTOC);
+    }
   }
 
   function renderPosts() {
