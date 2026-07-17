@@ -4,9 +4,11 @@
   var homeView = document.getElementById('home-view');
   var postView = document.getElementById('post-view');
   var aboutView = document.getElementById('about-view');
+  var changelogView = document.getElementById('changelog-view');
   var postList = document.getElementById('post-list');
   var postContent = document.getElementById('post-content');
   var aboutContent = document.getElementById('about-content');
+  var changelogList = document.getElementById('changelog-list');
   var tagFilter = document.getElementById('tag-filter');
   var searchInput = document.getElementById('search-input');
   var themeToggle = document.getElementById('theme-toggle');
@@ -61,14 +63,14 @@
     });
   }
 
-  function showHome() { homeView.classList.remove('hidden'); postView.classList.add('hidden'); aboutView.classList.add('hidden'); window.scrollTo(0, 0); }
+  function showHome() { homeView.classList.remove('hidden'); postView.classList.add('hidden'); aboutView.classList.add('hidden'); changelogView.classList.add('hidden'); window.scrollTo(0, 0); }
   function showAbout() {
-    homeView.classList.add('hidden'); postView.classList.add('hidden'); aboutView.classList.remove('hidden'); window.scrollTo(0, 0);
+    homeView.classList.add('hidden'); postView.classList.add('hidden'); aboutView.classList.remove('hidden'); changelogView.classList.add('hidden'); window.scrollTo(0, 0);
     fetch('posts/about.md').then(function(r) { return r.text(); }).then(function(md) { aboutContent.innerHTML = marked.parse(md); }).catch(function() { aboutContent.innerHTML = '<p class="empty-state">加载失败</p>'; });
   }
 
   function showPost(slug) {
-    homeView.classList.add('hidden'); aboutView.classList.add('hidden'); postView.classList.remove('hidden');
+    homeView.classList.add('hidden'); aboutView.classList.add('hidden'); changelogView.classList.add('hidden'); postView.classList.remove('hidden');
     postContent.innerHTML = '<p class="loading">加载中...</p>'; window.scrollTo(0, 0);
     var post = posts.find(function(p) { return p.slug === slug; });
     if (!post) { postContent.innerHTML = '<p class="empty-state">文章未找到</p>'; return; }
@@ -77,10 +79,37 @@
     }).catch(function() { postContent.innerHTML = '<p class="empty-state">文章加载失败</p>'; });
   }
 
+  function showChangelog() {
+    homeView.classList.add('hidden'); postView.classList.add('hidden'); aboutView.classList.add('hidden'); changelogView.classList.remove('hidden'); window.scrollTo(0, 0);
+    changelogList.innerHTML = '<p class="loading">加载中...</p>';
+    fetch('posts/changelog.json').then(function(r) { return r.json(); }).then(function(data) { renderChangelog(data); }).catch(function() { changelogList.innerHTML = '<p class="empty-state">加载失败</p>'; });
+  }
+
+  function renderChangelog(data) {
+    if (!data || !data.length) { changelogList.innerHTML = '<p class="empty-state">暂无记录</p>'; return; }
+    var badgeMap = { '初始化': 'init', '新增': 'add', '修复': 'fix', '批量导入': 'batch', '更新': 'add' };
+    var h = '', lastMonth = '';
+    data.slice().reverse().forEach(function(e) {
+      var month = e.date.slice(0, 7);
+      if (month !== lastMonth) { if (lastMonth) h += '</div>'; h += '<div class="changelog-month">' + month + '</div>'; lastMonth = month; }
+      var badge = badgeMap[e.type] || 'add';
+      h += '<div class="changelog-item">';
+      h += '<div class="changelog-item-date">' + e.date + '</div>';
+      h += '<div class="changelog-item-body">';
+      h += '<span class="changelog-item-badge --' + badge + '">' + esc(e.type) + '</span>';
+      h += '<span class="changelog-item-text">' + esc(e.description) + '</span>';
+      if (e.slug) h += ' <a href="#/post/' + esc(e.slug) + '" class="changelog-item-link">查看 →</a>';
+      h += '</div></div>';
+    });
+    if (lastMonth) h += '</div>';
+    changelogList.innerHTML = h;
+  }
+
   function handleRoute() {
     var hash = window.location.hash.slice(1) || '/';
     if (hash.startsWith('/post/')) showPost(hash.replace('/post/', ''));
     else if (hash === '/about') showAbout();
+    else if (hash === '/changelog') showChangelog();
     else showHome();
   }
 

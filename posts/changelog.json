@@ -1,0 +1,32 @@
+[
+  {
+    "date": "2026-06-09",
+    "type": "初始化",
+    "description": "博客上线，发布 3 篇初始文章：开篇、Python 基础回顾、异步编程初步理解",
+    "slug": null
+  },
+  {
+    "date": "2026-06-10",
+    "type": "批量导入",
+    "description": "导入 7 篇学习笔记：Java 基础、面向对象、异常IO与网络编程、C++ STL、排序搜索、数学数论、Markdown 速记",
+    "slug": null
+  },
+  {
+    "date": "2026-06-10",
+    "type": "修复",
+    "description": "修正所有文章编码为 UTF-8，解决中文显示问题",
+    "slug": null
+  },
+  {
+    "date": "2026-06-10",
+    "type": "批量导入",
+    "description": "补全 5 篇笔记：Java 常用类（String 与包装类）、二分查找与前缀和差分、区间合并与离散化、图论与动态规划、常用数据结构",
+    "slug": null
+  },
+  {
+    "date": "2026-07-17",
+    "type": "新增",
+    "description": "上线更新日志功能，支持时间线展示博客变更记录；补全 index.json 中缺失的文章条目，优化数据完整性",
+    "slug": null
+  }
+]
