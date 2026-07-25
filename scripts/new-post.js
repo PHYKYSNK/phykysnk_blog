@@ -269,11 +269,87 @@ function quickMode(args) {
   console.log('  \x1b[32m🎉 完成！\x1b[0m\n');
 }
 
+async function deleteMode() {
+  const index = readJSON(INDEX_JSON) || [];
+  if (!index.length) {
+    console.log('\n  \x1b[33m⚠ 没有任何已注册的文章\x1b[0m\n');
+    rl.close(); return;
+  }
+
+  console.log('\n  \x1b[31m🗑️ 删除文章\x1b[0m');
+  console.log('  \x1b[90m' + '='.repeat(30) + '\x1b[0m\n');
+  console.log('  \x1b[90m当前共 ' + index.length + ' 篇文章：\x1b[0m\n');
+
+  index.forEach((p, i) => {
+    const marker = fs.existsSync(path.join(POSTS_DIR, p.slug + '.md')) ? '' : ' \x1b[31m[文件缺失]\x1b[0m';
+    console.log(`  \x1b[90m  ${String(i + 1).padStart(2)}.\x1b[0m ${p.title}  \x1b[90m(${p.date})\x1b[0m${marker}`);
+  });
+
+  console.log();
+  const pick = (await ask('  输入编号删除（逗号分隔多选，直接回车取消）：\x1b[33m')).trim();
+  console.log('\x1b[0m');
+  if (!pick) { console.log('  \x1b[33m✖ 已取消\x1b[0m\n'); rl.close(); return; }
+
+  const selected = pick.split(/[,，]/).map(s => parseInt(s.trim())).filter(n => n > 0 && n <= index.length);
+  if (!selected.length) { console.log('  \x1b[33m✖ 无效编号\x1b[0m\n'); rl.close(); return; }
+
+  const toDelete = selected.map(i => index[i - 1]);
+  console.log('  \x1b[33m⚠ 即将删除以下文章：\x1b[0m\n');
+  toDelete.forEach(p => console.log(`  \x1b[90m  ·\x1b[0m ${p.title}  \x1b[90m(posts/${p.slug}.md)\x1b[0m`));
+  console.log();
+
+  const confirm = (await ask('  \x1b[35m?\x1b[0m 确认删除？此操作不可撤销！(\x1b[31myes\x1b[0m/N)：\x1b[33m')).trim().toLowerCase();
+  console.log('\x1b[0m');
+  if (confirm !== 'yes') { console.log('  \x1b[33m✖ 已取消\x1b[0m\n'); rl.close(); return; }
+
+  const doPush = (await ask('  \x1b[35m?\x1b[0m 是否自动 git commit + push？(\x1b[32mY\x1b[0m/n)：\x1b[33m')).trim().toLowerCase() !== 'n';
+  console.log('\x1b[0m');
+
+  const date = today();
+  const deletedSlugs = [];
+  const changelog = readJSON(CHANGELOG_JSON) || [];
+
+  toDelete.forEach(p => {
+    const mdPath = path.join(POSTS_DIR, p.slug + '.md');
+    if (fs.existsSync(mdPath)) {
+      fs.unlinkSync(mdPath);
+      console.log(`  \x1b[32m✔\x1b[0m 已删除文件：posts/${p.slug}.md`);
+    } else {
+      console.log(`  \x1b[33m⚠\x1b[0m 文件不存在：posts/${p.slug}.md（跳过）`);
+    }
+    deletedSlugs.push(p.slug);
+    changelog.push({ date, type: '删除', description: `删除文章：${p.title}`, slug: null });
+  });
+
+  const newIndex = index.filter(p => !deletedSlugs.includes(p.slug));
+  writeJSON(INDEX_JSON, newIndex);
+  writeJSON(CHANGELOG_JSON, changelog);
+  console.log('  \x1b[32m✔\x1b[0m index.json 已更新');
+  console.log('  \x1b[32m✔\x1b[0m changelog.json 已更新\n');
+
+  if (doPush) {
+    const { execSync } = require('child_process');
+    try {
+      execSync(`git add "${INDEX_JSON}" "${CHANGELOG_JSON}"`, { cwd: path.join(__dirname, '..'), stdio: 'pipe' });
+      execSync(`git commit -m "chore: 删除 ${toDelete.length} 篇文章"`, { cwd: path.join(__dirname, '..'), stdio: 'pipe' });
+      execSync('git push', { cwd: path.join(__dirname, '..'), stdio: 'pipe' });
+      console.log('  \x1b[32m✔\x1b[0m 已推送至 GitHub\n');
+    } catch (e) {
+      console.log(`  \x1b[33m⚠ git 操作失败：${e.stderr?.toString().trim() || e.message}\x1b[0m`);
+    }
+  }
+
+  console.log('  \x1b[32m🗑️ 删除完成\x1b[0m\n');
+  rl.close();
+}
+
 // === Entry ===
 const args = process.argv.slice(2);
 
 if (args.includes('--scan')) {
   scanMode();
+} else if (args.includes('--delete')) {
+  deleteMode();
 } else if (args.length && !args[0].startsWith('--')) {
   quickMode(args);
 } else {

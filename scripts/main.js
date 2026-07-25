@@ -299,7 +299,7 @@
 
   function renderChangelog(data) {
     if (!data || !data.length) { changelogList.innerHTML = '<p class="empty-state">暂无记录</p>'; return; }
-    var badgeMap = { '初始化': 'init', '新增': 'add', '修复': 'fix', '批量导入': 'batch', '更新': 'add', '优化': 'update' };
+    var badgeMap = { '初始化': 'init', '新增': 'add', '修复': 'fix', '批量导入': 'batch', '更新': 'add', '优化': 'update', '删除': 'delete' };
     var h = '', lastMonth = '';
     data.slice().reverse().forEach(function(e) {
       var month = e.date.slice(0, 7);
