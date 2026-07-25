@@ -3,9 +3,12 @@
  * new-post.js — 交互式博客文章管理工具
  *
  * 用法:
- *   node scripts/new-post.js              交互模式（创建或注册）
- *   node scripts/new-post.js --scan       扫描并选择注册已有文件
- *   node scripts/new-post.js "标题" --tags "标签" --push  快速创建
+ *   node scripts/new-post.js                        交互模式（创建或注册）
+ *   node scripts/new-post.js --scan                 扫描并选择注册已有文件
+ *   node scripts/new-post.js --delete               浏览并选择删除文章
+ *   node scripts/new-post.js --changelog-add        手动添加更新日志条目
+ *   node scripts/new-post.js --changelog-delete     浏览并删除日志条目
+ *   node scripts/new-post.js "标题" --tags "标签"    快速创建（--push 可选）
  */
 const fs = require('fs');
 const path = require('path');
@@ -343,6 +346,98 @@ async function deleteMode() {
   rl.close();
 }
 
+async function changelogAddMode() {
+  const changelog = readJSON(CHANGELOG_JSON) || [];
+
+  console.log('\n  \x1b[32m📋 添加更新日志条目\x1b[0m');
+  console.log('  \x1b[90m' + '='.repeat(30) + '\x1b[0m\n');
+
+  console.log('  \x1b[90m  可选类型：初始化 / 新增 / 修复 / 优化 / 批量导入 / 更新\x1b[0m');
+  const type = (await ask('  \x1b[35m?\x1b[0m 变更类型：\x1b[33m')).trim();
+  console.log('\x1b[0m');
+  if (!type) { console.log('  \x1b[33m✖ 已取消\x1b[0m\n'); rl.close(); return; }
+
+  const description = (await ask('  \x1b[35m?\x1b[0m 变更描述：\x1b[33m')).trim();
+  console.log('\x1b[0m');
+  if (!description) { console.log('  \x1b[33m✖ 描述不能为空\x1b[0m\n'); rl.close(); return; }
+
+  const slug = (await ask('  \x1b[35m?\x1b[0m 关联文章 slug（可选，直接回车跳过）：\x1b[33m')).trim();
+  console.log('\x1b[0m');
+
+  const date = today();
+  const entry = { date, type, description, slug: slug || null };
+  changelog.push(entry);
+  writeJSON(CHANGELOG_JSON, changelog);
+  console.log(`  \x1b[32m✔\x1b[0m 日志已添加：${type} — ${description.slice(0, 40)}${description.length > 40 ? '...' : ''}\n`);
+
+  const doPush = (await ask('  \x1b[35m?\x1b[0m 是否自动 git commit + push？(\x1b[32mY\x1b[0m/n)：\x1b[33m')).trim().toLowerCase() !== 'n';
+  console.log('\x1b[0m');
+
+  if (doPush) {
+    const { execSync } = require('child_process');
+    try {
+      execSync(`git add "${CHANGELOG_JSON}"`, { cwd: path.join(__dirname, '..'), stdio: 'pipe' });
+      execSync(`git commit -m "chore: 更新日志 - ${type}"`, { cwd: path.join(__dirname, '..'), stdio: 'pipe' });
+      execSync('git push', { cwd: path.join(__dirname, '..'), stdio: 'pipe' });
+      console.log('  \x1b[32m✔\x1b[0m 已推送至 GitHub\n');
+    } catch (e) {
+      console.log(`  \x1b[33m⚠ git 操作失败：${e.stderr?.toString().trim() || e.message}\x1b[0m`);
+    }
+  }
+
+  rl.close();
+}
+
+async function changelogDeleteMode() {
+  const changelog = readJSON(CHANGELOG_JSON) || [];
+  if (!changelog.length) {
+    console.log('\n  \x1b[33m⚠ 没有任何日志条目\x1b[0m\n');
+    rl.close(); return;
+  }
+
+  console.log('\n  \x1b[31m🗑️ 删除日志条目\x1b[0m');
+  console.log('  \x1b[90m' + '='.repeat(30) + '\x1b[0m\n');
+  console.log('  \x1b[90m当前共 ' + changelog.length + ' 条日志：\x1b[0m\n');
+
+  changelog.forEach((e, i) => {
+    const desc = e.description.length > 60 ? e.description.slice(0, 60) + '...' : e.description;
+    console.log(`  \x1b[90m  ${String(i + 1).padStart(2)}.\x1b[0m \x1b[33m[${e.type}]\x1b[0m ${desc}  \x1b[90m(${e.date})\x1b[0m`);
+  });
+
+  console.log();
+  const pick = (await ask('  输入编号删除（逗号分隔多选，直接回车取消）：\x1b[33m')).trim();
+  console.log('\x1b[0m');
+  if (!pick) { console.log('  \x1b[33m✖ 已取消\x1b[0m\n'); rl.close(); return; }
+
+  const selected = pick.split(/[,，]/).map(s => parseInt(s.trim())).filter(n => n > 0 && n <= changelog.length);
+  if (!selected.length) { console.log('  \x1b[33m✖ 无效编号\x1b[0m\n'); rl.close(); return; }
+
+  const confirm = (await ask('  \x1b[35m?\x1b[0m 确认删除选中的 ' + selected.length + ' 条日志？(\x1b[31myes\x1b[0m/N)：\x1b[33m')).trim().toLowerCase();
+  console.log('\x1b[0m');
+  if (confirm !== 'yes') { console.log('  \x1b[33m✖ 已取消\x1b[0m\n'); rl.close(); return; }
+
+  const newChangelog = changelog.filter((_, i) => !selected.includes(i + 1));
+  writeJSON(CHANGELOG_JSON, newChangelog);
+  console.log(`  \x1b[32m✔\x1b[0m 已删除 ${selected.length} 条日志\n`);
+
+  const doPush = (await ask('  \x1b[35m?\x1b[0m 是否自动 git commit + push？(\x1b[32mY\x1b[0m/n)：\x1b[33m')).trim().toLowerCase() !== 'n';
+  console.log('\x1b[0m');
+
+  if (doPush) {
+    const { execSync } = require('child_process');
+    try {
+      execSync(`git add "${CHANGELOG_JSON}"`, { cwd: path.join(__dirname, '..'), stdio: 'pipe' });
+      execSync(`git commit -m "chore: 删除 ${selected.length} 条更新日志"`, { cwd: path.join(__dirname, '..'), stdio: 'pipe' });
+      execSync('git push', { cwd: path.join(__dirname, '..'), stdio: 'pipe' });
+      console.log('  \x1b[32m✔\x1b[0m 已推送至 GitHub\n');
+    } catch (e) {
+      console.log(`  \x1b[33m⚠ git 操作失败：${e.stderr?.toString().trim() || e.message}\x1b[0m`);
+    }
+  }
+
+  rl.close();
+}
+
 // === Entry ===
 const args = process.argv.slice(2);
 
@@ -350,6 +445,10 @@ if (args.includes('--scan')) {
   scanMode();
 } else if (args.includes('--delete')) {
   deleteMode();
+} else if (args.includes('--changelog-add')) {
+  changelogAddMode();
+} else if (args.includes('--changelog-delete')) {
+  changelogDeleteMode();
 } else if (args.length && !args[0].startsWith('--')) {
   quickMode(args);
 } else {
