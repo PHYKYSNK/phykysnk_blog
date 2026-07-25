@@ -3,7 +3,7 @@
  * new-post.js — 交互式博客文章管理工具
  *
  * 用法:
- *   node scripts/new-post.js                        交互模式（创建或注册）
+ *   node scripts/new-post.js                        统一管理面板（推荐）
  *   node scripts/new-post.js --scan                 扫描并选择注册已有文件
  *   node scripts/new-post.js --delete               浏览并选择删除文章
  *   node scripts/new-post.js --changelog-add        手动添加更新日志条目
@@ -438,6 +438,29 @@ async function changelogDeleteMode() {
   rl.close();
 }
 
+async function menuMode() {
+  console.log('\n  \x1b[36m📝 博客管理面板\x1b[0m');
+  console.log('  \x1b[90m' + '='.repeat(30) + '\x1b[0m\n');
+  console.log('  \x1b[90m  [1]\x1b[0m 创建新文章');
+  console.log('  \x1b[90m  [2]\x1b[0m 注册已有文件');
+  console.log('  \x1b[90m  [3]\x1b[0m 删除文章');
+  console.log('  \x1b[90m  [4]\x1b[0m 添加更新日志');
+  console.log('  \x1b[90m  [5]\x1b[0m 删除更新日志');
+  console.log('  \x1b[90m  [6]\x1b[0m 退出\n');
+
+  const choice = (await ask('  请选择 [\x1b[32m1-6\x1b[0m]：\x1b[33m')).trim();
+  console.log('\x1b[0m');
+
+  switch (choice) {
+    case '1': interactiveMode(); break;
+    case '2': scanMode(); break;
+    case '3': deleteMode(); break;
+    case '4': changelogAddMode(); break;
+    case '5': changelogDeleteMode(); break;
+    default: console.log('  \x1b[33mbye\x1b[0m\n'); rl.close();
+  }
+}
+
 // === Entry ===
 const args = process.argv.slice(2);
 
@@ -451,6 +474,8 @@ if (args.includes('--scan')) {
   changelogDeleteMode();
 } else if (args.length && !args[0].startsWith('--')) {
   quickMode(args);
+} else if (args.includes('--menu') || args.includes('--help') || args.includes('-h')) {
+  menuMode();
 } else {
-  interactiveMode();
+  menuMode();
 }
