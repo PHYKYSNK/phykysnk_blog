@@ -70,5 +70,11 @@
     "type": "删除",
     "description": "删除文章：异步编程初步理解",
     "slug": null
+  },
+  {
+    "date": "2026-07-25",
+    "type": "更新",
+    "description": "测试文章修改功能的使用",
+    "slug": "hello-world"
   }
 ]
