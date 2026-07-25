@@ -1,23 +1,5 @@
 [
   {
-    "slug": "test01",
-    "title": "test01",
-    "date": "2026-07-25",
-    "updatedAt": "2026-07-25",
-    "tags": [
-      "test"
-    ],
-    "excerpt": ""
-  },
-  {
-    "slug": "post-20260725",
-    "title": "脚本添加文章功能测试",
-    "date": "2026-07-25",
-    "updatedAt": "2026-07-25",
-    "tags": [],
-    "excerpt": ""
-  },
-  {
     "slug": "hello-world",
     "title": "学习日志·开篇",
     "date": "2026-06-01",
@@ -26,28 +8,6 @@
       "日记"
     ],
     "excerpt": "这个博客的出发点——记录学习过程，不求完美但求持续。"
-  },
-  {
-    "slug": "python-basics",
-    "title": "Python 基础回顾：列表推导式与生成器",
-    "date": "2026-06-03",
-    "updatedAt": "2026-06-09",
-    "tags": [
-      "Python",
-      "编程基础"
-    ],
-    "excerpt": "列表推导式 vs 生成器表达式——理解一次生成与惰性求值的区别。"
-  },
-  {
-    "slug": "async-basics",
-    "title": "异步编程初步理解",
-    "date": "2026-06-09",
-    "updatedAt": "2026-06-09",
-    "tags": [
-      "Python",
-      "异步"
-    ],
-    "excerpt": "async/await 的核心思路：把等待的时间还给你。"
   },
   {
     "slug": "java-basics",
