@@ -8,6 +8,7 @@
  *   node scripts/new-post.js --delete               浏览并选择删除文章
  *   node scripts/new-post.js --changelog-add        手动添加更新日志条目
  *   node scripts/new-post.js --changelog-delete     浏览并删除日志条目
+ *   node scripts/new-post.js --edit                 选择文章编辑（自动更新 updatedAt + changelog）
  *   node scripts/new-post.js "标题" --tags "标签"    快速创建（--push 可选）
  */
 const fs = require('fs');
@@ -438,6 +439,94 @@ async function changelogDeleteMode() {
   rl.close();
 }
 
+async function editMode() {
+  const index = readJSON(INDEX_JSON) || [];
+  if (!index.length) {
+    console.log('\n  \x1b[33m⚠ 没有任何已注册的文章\x1b[0m\n');
+    rl.close(); return;
+  }
+
+  console.log('\n  \x1b[36m✏️ 编辑文章\x1b[0m');
+  console.log('  \x1b[90m' + '='.repeat(30) + '\x1b[0m\n');
+
+  index.forEach((p, i) => {
+    console.log(`  \x1b[90m  ${String(i + 1).padStart(2)}.\x1b[0m ${p.title}  \x1b[90m(${p.date})\x1b[0m`);
+  });
+  console.log();
+
+  const pick = (await ask('  输入编号选择要编辑的文章：\x1b[33m')).trim();
+  console.log('\x1b[0m');
+  const idx = parseInt(pick) - 1;
+  if (isNaN(idx) || idx < 0 || idx >= index.length) {
+    console.log('  \x1b[33m✖ 无效编号\x1b[0m\n');
+    rl.close(); return;
+  }
+
+  const post = index[idx];
+  const mdPath = path.join(POSTS_DIR, post.slug + '.md');
+
+  if (!fs.existsSync(mdPath)) {
+    console.log(`  \x1b[31m✖ 文件不存在：posts/${post.slug}.md\x1b[0m\n`);
+    rl.close(); return;
+  }
+
+  console.log(`  \x1b[36m📄 posts/${post.slug}.md\x1b[0m\n`);
+  console.log('  \x1b[90m  请在编辑器中修改此文件，完成后回来继续\x1b[0m\n');
+
+  // Try to open in editor
+  const { execSync } = require('child_process');
+  const repoDir = path.join(__dirname, '..');
+  try {
+    // Try VS Code first, then notepad
+    execSync(`code "${mdPath}"`, { cwd: repoDir, stdio: 'ignore' });
+    console.log('  \x1b[32m✔\x1b[0m 已尝试用 VS Code 打开');
+  } catch {
+    try {
+      execSync(`notepad "${mdPath}"`, { cwd: repoDir, stdio: 'ignore' });
+      console.log('  \x1b[32m✔\x1b[0m 已用记事本打开');
+    } catch {
+      console.log(`  \x1b[33m⚠ 无法自动打开编辑器，请手动编辑：\x1b[0m`);
+      console.log(`     \x1b[36m${mdPath}\x1b[0m\n`);
+    }
+  }
+
+  const done = (await ask('  编辑完成后输入 \x1b[32myes\x1b[0m 继续，直接回车取消：\x1b[33m')).trim().toLowerCase();
+  console.log('\x1b[0m');
+  if (done !== 'yes') { console.log('  \x1b[33m✖ 已取消\x1b[0m\n'); rl.close(); return; }
+
+  // Update updatedAt
+  const date = today();
+  const oldUpdated = post.updatedAt || post.date;
+  post.updatedAt = date;
+  writeJSON(INDEX_JSON, index);
+  console.log(`  \x1b[32m✔\x1b[0m updatedAt 已更新：${oldUpdated} → ${date}`);
+
+  // Changelog entry
+  const desc = (await ask('  简要描述本次修改（用于更新日志）：\x1b[33m')).trim();
+  console.log('\x1b[0m');
+  const changelog = readJSON(CHANGELOG_JSON) || [];
+  changelog.push({ date, type: '更新', description: desc || `更新文章：${post.title}`, slug: post.slug });
+  writeJSON(CHANGELOG_JSON, changelog);
+  console.log('  \x1b[32m✔\x1b[0m changelog.json 已更新\n');
+
+  const doPush = (await ask('  \x1b[35m?\x1b[0m 是否自动 git commit + push？(\x1b[32mY\x1b[0m/n)：\x1b[33m')).trim().toLowerCase() !== 'n';
+  console.log('\x1b[0m');
+
+  if (doPush) {
+    try {
+      execSync(`git add "${mdPath}" "${INDEX_JSON}" "${CHANGELOG_JSON}"`, { cwd: repoDir, stdio: 'pipe' });
+      execSync(`git commit -m "update: ${post.title}"`, { cwd: repoDir, stdio: 'pipe' });
+      execSync('git push', { cwd: repoDir, stdio: 'pipe' });
+      console.log('  \x1b[32m✔\x1b[0m 已推送至 GitHub\n');
+    } catch (e) {
+      console.log(`  \x1b[33m⚠ git 操作失败：${e.stderr?.toString().trim() || e.message}\x1b[0m`);
+    }
+  }
+
+  console.log('  \x1b[32m🎉 更新完成！\x1b[0m\n');
+  rl.close();
+}
+
 async function menuMode() {
   console.log('\n  \x1b[36m📝 博客管理面板\x1b[0m');
   console.log('  \x1b[90m' + '='.repeat(30) + '\x1b[0m\n');
@@ -446,9 +535,10 @@ async function menuMode() {
   console.log('  \x1b[90m  [3]\x1b[0m 删除文章');
   console.log('  \x1b[90m  [4]\x1b[0m 添加更新日志');
   console.log('  \x1b[90m  [5]\x1b[0m 删除更新日志');
-  console.log('  \x1b[90m  [6]\x1b[0m 退出\n');
+  console.log('  \x1b[90m  [6]\x1b[0m 编辑文章');
+  console.log('  \x1b[90m  [7]\x1b[0m 退出\n');
 
-  const choice = (await ask('  请选择 [\x1b[32m1-6\x1b[0m]：\x1b[33m')).trim();
+  const choice = (await ask('  请选择 [\x1b[32m1-7\x1b[0m]：\x1b[33m')).trim();
   console.log('\x1b[0m');
 
   switch (choice) {
@@ -457,6 +547,7 @@ async function menuMode() {
     case '3': deleteMode(); break;
     case '4': changelogAddMode(); break;
     case '5': changelogDeleteMode(); break;
+    case '6': editMode(); break;
     default: console.log('  \x1b[33mbye\x1b[0m\n'); rl.close();
   }
 }
@@ -472,6 +563,8 @@ if (args.includes('--scan')) {
   changelogAddMode();
 } else if (args.includes('--changelog-delete')) {
   changelogDeleteMode();
+} else if (args.includes('--edit')) {
+  editMode();
 } else if (args.length && !args[0].startsWith('--')) {
   quickMode(args);
 } else if (args.includes('--menu') || args.includes('--help') || args.includes('-h')) {
