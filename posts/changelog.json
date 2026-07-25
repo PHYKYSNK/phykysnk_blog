@@ -34,5 +34,11 @@
     "type": "优化",
     "description": "代码语法高亮（highlight.js 双主题随暗色模式自动切换）、一键复制代码、语言标签、文章目录 TOC（IntersectionObserver 滚动高亮）、信息栏样式优化、删除正文重复日期",
     "slug": null
+  },
+  {
+    "date": "2026-07-25",
+    "type": "新增",
+    "description": "发布新文章：脚本添加文章功能测试",
+    "slug": "post-20260725"
   }
 ]
