@@ -40,5 +40,11 @@
     "type": "新增",
     "description": "发布新文章：脚本添加文章功能测试",
     "slug": "post-20260725"
+  },
+  {
+    "date": "2026-07-25",
+    "type": "新增",
+    "description": "发布新文章：test01",
+    "slug": "test01"
   }
 ]

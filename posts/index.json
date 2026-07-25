@@ -1,5 +1,15 @@
 [
   {
+    "slug": "test01",
+    "title": "test01",
+    "date": "2026-07-25",
+    "updatedAt": "2026-07-25",
+    "tags": [
+      "test"
+    ],
+    "excerpt": ""
+  },
+  {
     "slug": "post-20260725",
     "title": "脚本添加文章功能测试",
     "date": "2026-07-25",
