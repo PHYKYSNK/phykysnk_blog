@@ -1,20 +1,20 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
-  --bg: #fcf9f4; --bg-card: #fff; --bg-card-hover: #faf7f0;
-  --text: #2d2d2d; --text-secondary: #8a8580; --text-link: #9b6b50;
-  --accent: #9b6b50; --accent-hover: #7d553e;
-  --border: #e8e2da; --border-light: #f0ebe3;
-  --tag-bg: #f0ebe3; --code-bg: #f5f1ea; --code-text: #4a4a4a;
+  --bg: #f6eddf; --bg-card: #fdf8f0; --bg-card-hover: #f8efe3;
+  --text: #3d3229; --text-secondary: #8f8173; --text-link: #b8855c;
+  --accent: #b8855c; --accent-hover: #9a6a44;
+  --border: #e5d9ca; --border-light: #eee5d8;
+  --tag-bg: #eee5d8; --code-bg: #f2e8db; --code-text: #4a3f35;
   --shadow: 0 1px 4px rgba(0,0,0,0.06); --shadow-hover: 0 4px 12px rgba(0,0,0,0.08);
   --radius: 10px; --max-width: 720px; --transition: 0.25s ease;
 }
 [data-theme="dark"] {
-  --bg: #17191e; --bg-card: #1e2027; --bg-card-hover: #22252c;
-  --text: #d4d4d4; --text-secondary: #8b8b8b; --text-link: #c9956e;
-  --accent: #c9956e; --accent-hover: #dbb08c;
-  --border: #2a2d35; --border-light: #24272e;
-  --tag-bg: #2a2d35; --code-bg: #1e2128; --code-text: #c8c8c8;
-  --shadow: 0 1px 4px rgba(0,0,0,0.3); --shadow-hover: 0 4px 16px rgba(0,0,0,0.4);
+  --bg: #1a1612; --bg-card: #221e1a; --bg-card-hover: #2a2520;
+  --text: #ddd6ce; --text-secondary: #9a8e82; --text-link: #d4a57a;
+  --accent: #d4a57a; --accent-hover: #e2ba94;
+  --border: #332d27; --border-light: #2a2520;
+  --tag-bg: #332d27; --code-bg: #241f1b; --code-text: #ccc3ba;
+  --shadow: 0 1px 4px rgba(0,0,0,0.4); --shadow-hover: 0 4px 16px rgba(0,0,0,0.5);
 }
 body { font-family: -apple-system,"Noto Sans SC","PingFang SC","Microsoft YaHei","Helvetica Neue",sans-serif; font-size: 16px; line-height: 1.8; color: var(--text); -webkit-font-smoothing: antialiased; transition: color var(--transition); position: relative; }
 body::before { content: ''; position: fixed; inset: 0; background-color: #2b3a61; background-image: url('/preview.gif'); background-repeat: no-repeat; background-size: cover; background-position: center; image-rendering: pixelated; image-rendering: crisp-edges; -ms-interpolation-mode: nearest-neighbor; z-index: -2; }
