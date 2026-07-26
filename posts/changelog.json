@@ -76,5 +76,11 @@
     "type": "更新",
     "description": "测试文章修改功能的使用",
     "slug": "hello-world"
+  },
+  {
+    "date": "2026-07-26",
+    "type": "更新",
+    "description": "更新关于页",
+    "slug": null
   }
 ]
