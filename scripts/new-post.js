@@ -441,45 +441,54 @@ async function changelogDeleteMode() {
 
 async function editMode() {
   const index = readJSON(INDEX_JSON) || [];
-  if (!index.length) {
-    console.log('\n  \x1b[33m⚠ 没有任何已注册的文章\x1b[0m\n');
-    rl.close(); return;
-  }
 
   console.log('\n  \x1b[36m✏️ 编辑文章\x1b[0m');
   console.log('  \x1b[90m' + '='.repeat(30) + '\x1b[0m\n');
 
+  console.log(`  \x1b[90m  [0]\x1b[0m 关于页（posts/about.md）`);
   index.forEach((p, i) => {
-    console.log(`  \x1b[90m  ${String(i + 1).padStart(2)}.\x1b[0m ${p.title}  \x1b[90m(${p.date})\x1b[0m`);
+    console.log(`  \x1b[90m  [${i + 1}]\x1b[0m ${p.title}  \x1b[90m(${p.date})\x1b[0m`);
   });
   console.log();
 
   const pick = (await ask('  输入编号选择要编辑的文章：\x1b[33m')).trim();
   console.log('\x1b[0m');
-  const idx = parseInt(pick) - 1;
-  if (isNaN(idx) || idx < 0 || idx >= index.length) {
-    console.log('  \x1b[33m✖ 无效编号\x1b[0m\n');
-    rl.close(); return;
+
+  let post = null;
+  let mdPath = '';
+  let isAbout = false;
+
+  if (pick === '0' || pick.toLowerCase() === 'a' || pick.toLowerCase() === 'about') {
+    isAbout = true;
+    mdPath = path.join(POSTS_DIR, 'about.md');
+    if (!fs.existsSync(mdPath)) {
+      console.log('  \x1b[31m✖ posts/about.md 不存在\x1b[0m\n');
+      rl.close(); return;
+    }
+    console.log('  \x1b[36m📄 posts/about.md  — 关于页\x1b[0m\n');
+  } else {
+    const idx = parseInt(pick) - 1;
+    if (isNaN(idx) || idx < 0 || idx >= index.length) {
+      console.log('  \x1b[33m✖ 无效编号\x1b[0m\n');
+      rl.close(); return;
+    }
+    post = index[idx];
+    mdPath = path.join(POSTS_DIR, post.slug + '.md');
+    if (!fs.existsSync(mdPath)) {
+      console.log(`  \x1b[31m✖ 文件不存在：posts/${post.slug}.md\x1b[0m\n`);
+      rl.close(); return;
+    }
+    console.log(`  \x1b[36m📄 posts/${post.slug}.md\x1b[0m\n`);
   }
 
-  const post = index[idx];
-  const mdPath = path.join(POSTS_DIR, post.slug + '.md');
-
-  if (!fs.existsSync(mdPath)) {
-    console.log(`  \x1b[31m✖ 文件不存在：posts/${post.slug}.md\x1b[0m\n`);
-    rl.close(); return;
-  }
-
-  console.log(`  \x1b[36m📄 posts/${post.slug}.md\x1b[0m\n`);
   console.log('  \x1b[90m  请在编辑器中修改此文件，完成后回来继续\x1b[0m\n');
 
   // Try to open in editor
   const { execSync } = require('child_process');
   const repoDir = path.join(__dirname, '..');
   try {
-    // Try VS Code first, then notepad
     execSync(`code "${mdPath}"`, { cwd: repoDir, stdio: 'ignore' });
-    console.log('  \x1b[32m✔\x1b[0m 已尝试用 VS Code 打开');
+    console.log('  \x1b[32m✔\x1b[0m 已用 VS Code 打开');
   } catch {
     try {
       execSync(`notepad "${mdPath}"`, { cwd: repoDir, stdio: 'ignore' });
@@ -494,28 +503,37 @@ async function editMode() {
   console.log('\x1b[0m');
   if (done !== 'yes') { console.log('  \x1b[33m✖ 已取消\x1b[0m\n'); rl.close(); return; }
 
-  // Update updatedAt
   const date = today();
-  const oldUpdated = post.updatedAt || post.date;
-  post.updatedAt = date;
-  writeJSON(INDEX_JSON, index);
-  console.log(`  \x1b[32m✔\x1b[0m updatedAt 已更新：${oldUpdated} → ${date}`);
-
-  // Changelog entry
-  const desc = (await ask('  简要描述本次修改（用于更新日志）：\x1b[33m')).trim();
-  console.log('\x1b[0m');
   const changelog = readJSON(CHANGELOG_JSON) || [];
-  changelog.push({ date, type: '更新', description: desc || `更新文章：${post.title}`, slug: post.slug });
-  writeJSON(CHANGELOG_JSON, changelog);
-  console.log('  \x1b[32m✔\x1b[0m changelog.json 已更新\n');
+
+  if (isAbout) {
+    // about.md — 只更新 changelog
+    changelog.push({ date, type: '更新', description: '更新关于页', slug: null });
+    writeJSON(CHANGELOG_JSON, changelog);
+    console.log('  \x1b[32m✔\x1b[0m changelog.json 已更新\n');
+  } else {
+    // Normal article — update updatedAt + changelog
+    const oldUpdated = post.updatedAt || post.date;
+    post.updatedAt = date;
+    writeJSON(INDEX_JSON, index);
+    console.log(`  \x1b[32m✔\x1b[0m updatedAt 已更新：${oldUpdated} → ${date}`);
+    const desc = (await ask('  简要描述本次修改（用于更新日志）：\x1b[33m')).trim();
+    console.log('\x1b[0m');
+    changelog.push({ date, type: '更新', description: desc || `更新文章：${post.title}`, slug: post.slug });
+    writeJSON(CHANGELOG_JSON, changelog);
+    console.log('  \x1b[32m✔\x1b[0m changelog.json 已更新\n');
+  }
 
   const doPush = (await ask('  \x1b[35m?\x1b[0m 是否自动 git commit + push？(\x1b[32mY\x1b[0m/n)：\x1b[33m')).trim().toLowerCase() !== 'n';
   console.log('\x1b[0m');
 
   if (doPush) {
     try {
-      execSync(`git add "${mdPath}" "${INDEX_JSON}" "${CHANGELOG_JSON}"`, { cwd: repoDir, stdio: 'pipe' });
-      execSync(`git commit -m "update: ${post.title}"`, { cwd: repoDir, stdio: 'pipe' });
+      const addFiles = isAbout
+        ? `"${mdPath}" "${CHANGELOG_JSON}"`
+        : `"${mdPath}" "${INDEX_JSON}" "${CHANGELOG_JSON}"`;
+      execSync(`git add ${addFiles}`, { cwd: repoDir, stdio: 'pipe' });
+      execSync(`git commit -m "update: ${isAbout ? '关于页' : post.title}"`, { cwd: repoDir, stdio: 'pipe' });
       execSync('git push', { cwd: repoDir, stdio: 'pipe' });
       console.log('  \x1b[32m✔\x1b[0m 已推送至 GitHub\n');
     } catch (e) {
