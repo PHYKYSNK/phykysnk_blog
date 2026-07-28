@@ -100,7 +100,7 @@ async function registerExisting(slugs) {
   }
 
   console.log('  \x1b[38;5;142m🎉 注册完成！\x1b[0m\n');
-  rl.close();
+  return backToMenu();
 }
 
 async function interactiveMode() {
@@ -124,8 +124,8 @@ async function interactiveMode() {
       if (slugs.length) return registerExisting(slugs);
     } else if (choice !== '2') {
       console.log('  \x1b[38;5;222m✖ 已取消\x1b[0m\n');
-      rl.close(); return;
-    }
+      return backToMenu();
+}
     // choice === '2' → fall through to create new post
   }
 
@@ -135,7 +135,8 @@ async function interactiveMode() {
 
   const title = (await ask('  \x1b[38;5;173m?\x1b[0m 文章标题：\x1b[38;5;222m')).trim();
   console.log('\x1b[0m');
-  if (!title) { console.log('  \x1b[38;5;203m✖ 标题不能为空\x1b[0m\n'); rl.close(); return; }
+  if (!title) { console.log('  \x1b[38;5;203m✖ 标题不能为空\x1b[0m\n'); return backToMenu();
+}
 
   const suggested = slugify(title);
   console.log('  \x1b[38;5;245m  Slug 用于生成文章 URL 链接，建议使用英文短横线格式\x1b[0m');
@@ -167,14 +168,15 @@ async function interactiveMode() {
 
   const confirm = (await ask('  \x1b[38;5;173m?\x1b[0m [\x1b[38;5;142mY\x1b[0m] 确认  [\x1b[38;5;203mN\x1b[0m] 取消：\x1b[38;5;222m')).trim().toLowerCase();
   console.log('\x1b[0m');
-  if (confirm === 'n') { console.log('  \x1b[38;5;222m✖ 已取消\x1b[0m\n'); rl.close(); return; }
+  if (confirm === 'n') { console.log('  \x1b[38;5;222m✖ 已取消\x1b[0m\n'); return backToMenu();
+}
 
   // === Execute ===
   const mdPath = path.join(POSTS_DIR, slug + '.md');
   if (fs.existsSync(mdPath)) {
     console.log(`  \x1b[38;5;203m✖ 文件已存在：posts/${slug}.md\x1b[0m\n`);
-    rl.close(); return;
-  }
+    return backToMenu();
+}
   const mdContent = `# ${title}\n\n\n`;
   fs.writeFileSync(mdPath, mdContent, 'utf8');
   console.log(`  \x1b[38;5;142m✔\x1b[0m 已创建：posts/${slug}.md`);
@@ -204,15 +206,15 @@ async function interactiveMode() {
   }
 
   console.log('  \x1b[38;5;142m🎉 部署中，等待 Cloudflare Pages 构建完成...\x1b[0m\n');
-  rl.close();
+  return backToMenu();
 }
 
 async function scanMode() {
   const unregistered = getUnregisteredFiles();
   if (!unregistered.length) {
     console.log('\n  \x1b[38;5;142m✔ 没有未注册的文件\x1b[0m\n');
-    rl.close(); return;
-  }
+    return backToMenu();
+}
 
   console.log(`\n  \x1b[38;5;222m⚠ 发现 ${unregistered.length} 个未注册的文件：\x1b[0m\n`);
   unregistered.forEach((f, i) => {
@@ -225,7 +227,8 @@ async function scanMode() {
   console.log('\x1b[0m');
   const selected = pick ? pick.split(/[,，]/).map(s => parseInt(s.trim())).filter(n => n > 0 && n <= unregistered.length) : unregistered.map((_, i) => i + 1);
   const slugs = selected.map(i => unregistered[i - 1]).filter(Boolean);
-  if (!slugs.length) { console.log('  \x1b[38;5;222m✖ 未选择任何文件\x1b[0m\n'); rl.close(); return; }
+  if (!slugs.length) { console.log('  \x1b[38;5;222m✖ 未选择任何文件\x1b[0m\n'); return backToMenu();
+}
   return registerExisting(slugs);
 }
 
@@ -277,8 +280,8 @@ async function deleteMode() {
   const index = readJSON(INDEX_JSON) || [];
   if (!index.length) {
     console.log('\n  \x1b[38;5;222m⚠ 没有任何已注册的文章\x1b[0m\n');
-    rl.close(); return;
-  }
+    return backToMenu();
+}
 
   console.log('\n  \x1b[38;5;203m🗑️ 删除文章\x1b[0m');
   console.log('  \x1b[38;5;245m' + '='.repeat(30) + '\x1b[0m\n');
@@ -292,10 +295,12 @@ async function deleteMode() {
   console.log();
   const pick = (await ask('  输入编号删除（逗号分隔多选，直接回车取消）：\x1b[38;5;222m')).trim();
   console.log('\x1b[0m');
-  if (!pick) { console.log('  \x1b[38;5;222m✖ 已取消\x1b[0m\n'); rl.close(); return; }
+  if (!pick) { console.log('  \x1b[38;5;222m✖ 已取消\x1b[0m\n'); return backToMenu();
+}
 
   const selected = pick.split(/[,，]/).map(s => parseInt(s.trim())).filter(n => n > 0 && n <= index.length);
-  if (!selected.length) { console.log('  \x1b[38;5;222m✖ 无效编号\x1b[0m\n'); rl.close(); return; }
+  if (!selected.length) { console.log('  \x1b[38;5;222m✖ 无效编号\x1b[0m\n'); return backToMenu();
+}
 
   const toDelete = selected.map(i => index[i - 1]);
   console.log('  \x1b[38;5;222m⚠ 即将删除以下文章：\x1b[0m\n');
@@ -304,7 +309,8 @@ async function deleteMode() {
 
   const confirm = (await ask('  \x1b[38;5;173m?\x1b[0m 确认删除？此操作不可撤销！(\x1b[38;5;203myes\x1b[0m/N)：\x1b[38;5;222m')).trim().toLowerCase();
   console.log('\x1b[0m');
-  if (confirm !== 'yes') { console.log('  \x1b[38;5;222m✖ 已取消\x1b[0m\n'); rl.close(); return; }
+  if (confirm !== 'yes') { console.log('  \x1b[38;5;222m✖ 已取消\x1b[0m\n'); return backToMenu();
+}
 
   const doPush = (await ask('  \x1b[38;5;173m?\x1b[0m 是否自动 git commit + push？(\x1b[38;5;142mY\x1b[0m/n)：\x1b[38;5;222m')).trim().toLowerCase() !== 'n';
   console.log('\x1b[0m');
@@ -344,7 +350,7 @@ async function deleteMode() {
   }
 
   console.log('  \x1b[38;5;142m🗑️ 删除完成\x1b[0m\n');
-  rl.close();
+  return backToMenu();
 }
 
 async function changelogAddMode() {
@@ -356,11 +362,13 @@ async function changelogAddMode() {
   console.log('  \x1b[38;5;245m  可选类型：初始化 / 新增 / 修复 / 优化 / 批量导入 / 更新\x1b[0m');
   const type = (await ask('  \x1b[38;5;173m?\x1b[0m 变更类型：\x1b[38;5;222m')).trim();
   console.log('\x1b[0m');
-  if (!type) { console.log('  \x1b[38;5;222m✖ 已取消\x1b[0m\n'); rl.close(); return; }
+  if (!type) { console.log('  \x1b[38;5;222m✖ 已取消\x1b[0m\n'); return backToMenu();
+}
 
   const description = (await ask('  \x1b[38;5;173m?\x1b[0m 变更描述：\x1b[38;5;222m')).trim();
   console.log('\x1b[0m');
-  if (!description) { console.log('  \x1b[38;5;222m✖ 描述不能为空\x1b[0m\n'); rl.close(); return; }
+  if (!description) { console.log('  \x1b[38;5;222m✖ 描述不能为空\x1b[0m\n'); return backToMenu();
+}
 
   const slug = (await ask('  \x1b[38;5;173m?\x1b[0m 关联文章 slug（可选，直接回车跳过）：\x1b[38;5;222m')).trim();
   console.log('\x1b[0m');
@@ -386,15 +394,15 @@ async function changelogAddMode() {
     }
   }
 
-  rl.close();
+  return backToMenu();
 }
 
 async function changelogDeleteMode() {
   const changelog = readJSON(CHANGELOG_JSON) || [];
   if (!changelog.length) {
     console.log('\n  \x1b[38;5;222m⚠ 没有任何日志条目\x1b[0m\n');
-    rl.close(); return;
-  }
+    return backToMenu();
+}
 
   console.log('\n  \x1b[38;5;203m🗑️ 删除日志条目\x1b[0m');
   console.log('  \x1b[38;5;245m' + '='.repeat(30) + '\x1b[0m\n');
@@ -408,14 +416,17 @@ async function changelogDeleteMode() {
   console.log();
   const pick = (await ask('  输入编号删除（逗号分隔多选，直接回车取消）：\x1b[38;5;222m')).trim();
   console.log('\x1b[0m');
-  if (!pick) { console.log('  \x1b[38;5;222m✖ 已取消\x1b[0m\n'); rl.close(); return; }
+  if (!pick) { console.log('  \x1b[38;5;222m✖ 已取消\x1b[0m\n'); return backToMenu();
+}
 
   const selected = pick.split(/[,，]/).map(s => parseInt(s.trim())).filter(n => n > 0 && n <= changelog.length);
-  if (!selected.length) { console.log('  \x1b[38;5;222m✖ 无效编号\x1b[0m\n'); rl.close(); return; }
+  if (!selected.length) { console.log('  \x1b[38;5;222m✖ 无效编号\x1b[0m\n'); return backToMenu();
+}
 
   const confirm = (await ask('  \x1b[38;5;173m?\x1b[0m 确认删除选中的 ' + selected.length + ' 条日志？(\x1b[38;5;203myes\x1b[0m/N)：\x1b[38;5;222m')).trim().toLowerCase();
   console.log('\x1b[0m');
-  if (confirm !== 'yes') { console.log('  \x1b[38;5;222m✖ 已取消\x1b[0m\n'); rl.close(); return; }
+  if (confirm !== 'yes') { console.log('  \x1b[38;5;222m✖ 已取消\x1b[0m\n'); return backToMenu();
+}
 
   const newChangelog = changelog.filter((_, i) => !selected.includes(i + 1));
   writeJSON(CHANGELOG_JSON, newChangelog);
@@ -436,7 +447,7 @@ async function changelogDeleteMode() {
     }
   }
 
-  rl.close();
+  return backToMenu();
 }
 
 async function editMode() {
@@ -463,21 +474,21 @@ async function editMode() {
     mdPath = path.join(POSTS_DIR, 'about.md');
     if (!fs.existsSync(mdPath)) {
       console.log('  \x1b[38;5;203m✖ posts/about.md 不存在\x1b[0m\n');
-      rl.close(); return;
-    }
+      return backToMenu();
+}
     console.log('  \x1b[38;5;180m📄 posts/about.md  — 关于页\x1b[0m\n');
   } else {
     const idx = parseInt(pick) - 1;
     if (isNaN(idx) || idx < 0 || idx >= index.length) {
       console.log('  \x1b[38;5;222m✖ 无效编号\x1b[0m\n');
-      rl.close(); return;
-    }
+      return backToMenu();
+}
     post = index[idx];
     mdPath = path.join(POSTS_DIR, post.slug + '.md');
     if (!fs.existsSync(mdPath)) {
       console.log(`  \x1b[38;5;203m✖ 文件不存在：posts/${post.slug}.md\x1b[0m\n`);
-      rl.close(); return;
-    }
+      return backToMenu();
+}
     console.log(`  \x1b[38;5;180m📄 posts/${post.slug}.md\x1b[0m\n`);
   }
 
@@ -501,7 +512,8 @@ async function editMode() {
 
   const done = (await ask('  编辑完成后输入 \x1b[38;5;142myes\x1b[0m 继续，直接回车取消：\x1b[38;5;222m')).trim().toLowerCase();
   console.log('\x1b[0m');
-  if (done !== 'yes') { console.log('  \x1b[38;5;222m✖ 已取消\x1b[0m\n'); rl.close(); return; }
+  if (done !== 'yes') { console.log('  \x1b[38;5;222m✖ 已取消\x1b[0m\n'); return backToMenu();
+}
 
   const date = today();
   const changelog = readJSON(CHANGELOG_JSON) || [];
@@ -542,7 +554,7 @@ async function editMode() {
   }
 
   console.log('  \x1b[38;5;142m🎉 更新完成！\x1b[0m\n');
-  rl.close();
+  return backToMenu();
 }
 
 async function menuMode() {
@@ -560,14 +572,21 @@ async function menuMode() {
   console.log('\x1b[0m');
 
   switch (choice) {
-    case '1': interactiveMode(); break;
-    case '2': scanMode(); break;
-    case '3': deleteMode(); break;
-    case '4': changelogAddMode(); break;
-    case '5': changelogDeleteMode(); break;
-    case '6': editMode(); break;
-    default: console.log('  \x1b[38;5;222mbye\x1b[0m\n'); rl.close();
+    case '1': await interactiveMode(); break;
+    case '2': await scanMode(); break;
+    case '3': await deleteMode(); break;
+    case '4': await changelogAddMode(); break;
+    case '5': await changelogDeleteMode(); break;
+    case '6': await editMode(); break;
+    default: console.log('  \x1b[38;5;222mbye\x1b[0m\n'); process.exit(0);
   }
+  await backToMenu();
+  return menuMode();
+}
+
+async function backToMenu() {
+  await ask('\n  按回车键返回菜单...');
+  console.log('\x1b[0m');
 }
 
 // === Entry ===
