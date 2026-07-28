@@ -1,4 +1,4 @@
-# 前端三件套学习总结
+# Frontend Basics: HTML, CSS & JavaScript
 
 > 基于黑马程序员 JavaWeb 前置课程整理，包含 HTML / CSS / JS 核心知识点与实战陷阱。
 
