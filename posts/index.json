@@ -1,5 +1,17 @@
 [
   {
+    "slug": "前端学习总结",
+    "title": "前端三件套学习总结",
+    "date": "2026-07-28",
+    "updatedAt": "2026-07-28",
+    "tags": [
+      "HTML",
+      "CSS",
+      "JS"
+    ],
+    "excerpt": "> 基于黑马程序员 JavaWeb 前置课程整理，包含 HTML / CSS / JS 核心知识点与实战陷阱。"
+  },
+  {
     "slug": "hello-world",
     "title": "学习日志·开篇",
     "date": "2026-06-01",
