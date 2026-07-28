@@ -193,14 +193,14 @@
     if (!prev && !next) return;
     var h = '<div class="post-nav">';
     if (prev) {
-      h += '<a href="#/post/' + prev.slug + '" class="post-nav-link prev">';
+      h += '<a href="#/post/' + encodeURIComponent(prev.slug) + '" class="post-nav-link prev">';
       h += '<span class="post-nav-label">&larr; 上一篇</span>';
       h += '<span class="post-nav-title">' + esc(prev.title) + '</span></a>';
     } else {
       h += '<div class="post-nav-empty"></div>';
     }
     if (next) {
-      h += '<a href="#/post/' + next.slug + '" class="post-nav-link next">';
+      h += '<a href="#/post/' + encodeURIComponent(next.slug) + '" class="post-nav-link next">';
       h += '<span class="post-nav-label">下一篇 &rarr;</span>';
       h += '<span class="post-nav-title">' + esc(next.title) + '</span></a>';
     } else {
@@ -236,8 +236,8 @@
     if (!list.length) { postList.innerHTML = '<p class="empty-state">没有找到文章</p>'; return; }
     var h = '';
     list.forEach(function(p) {
-      h += '<article class="post-card" onclick="window.location.hash=\'/post/' + p.slug + '\'">';
-      h += '<h2 class="post-card-title"><a href="#/post/' + p.slug + '">' + esc(p.title) + '</a></h2>';
+      h += '<article class="post-card" onclick="window.location.hash=\'/post/' + encodeURIComponent(p.slug) + '\'">';
+      h += '<h2 class="post-card-title"><a href="#/post/' + encodeURIComponent(p.slug) + '">' + esc(p.title) + '</a></h2>';
       h += '<div class="post-card-meta">' + p.date + ' · ';
       h += p.tags.map(function(t) { return '<span class="post-card-tag" data-tag="' + esc(t) + '">' + esc(t) + '</span>'; }).join(', ');
       h += '</div><p class="post-card-excerpt">' + esc(p.excerpt) + '</p></article>';
@@ -310,7 +310,7 @@
       h += '<div class="changelog-item-body">';
       h += '<span class="changelog-item-badge --' + badge + '">' + esc(e.type) + '</span>';
       h += '<span class="changelog-item-text">' + esc(e.description) + '</span>';
-      if (e.slug) h += ' <a href="#/post/' + esc(e.slug) + '" class="changelog-item-link">查看 →</a>';
+      if (e.slug) h += ' <a href="#/post/' + encodeURIComponent(e.slug) + '" class="changelog-item-link">查看 →</a>';
       h += '</div></div>';
     });
     if (lastMonth) h += '</div>';
@@ -319,7 +319,7 @@
 
   function handleRoute() {
     var hash = window.location.hash.slice(1) || '/';
-    if (hash.startsWith('/post/')) showPost(hash.replace('/post/', ''));
+    if (hash.startsWith('/post/')) showPost(decodeURIComponent(hash.replace('/post/', '')));
     else if (hash === '/about') showAbout();
     else if (hash === '/changelog') showChangelog();
     else showHome();
