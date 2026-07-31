@@ -1,5 +1,15 @@
 [
   {
+    "slug": "Vue",
+    "title": "Vue 3 快速入门总结",
+    "date": "2026-07-31",
+    "updatedAt": "2026-07-31",
+    "tags": [
+      "Vue"
+    ],
+    "excerpt": "> 基于 Vue 3 Composition API + ES Module 方式，涵盖核心指令、事件处理、计算属性与侦听器。"
+  },
+  {
     "slug": "frontend-basics-html-css-js",
     "title": "前端三件套学习总结",
     "date": "2026-07-28",

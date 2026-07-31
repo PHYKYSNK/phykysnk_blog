@@ -94,5 +94,11 @@
     "type": "新增",
     "description": "发布新文章：前端三件套学习总结",
     "slug": "frontend-basics-html-css-js"
+  },
+  {
+    "date": "2026-07-31",
+    "type": "新增",
+    "description": "发布新文章：Vue 3 快速入门总结",
+    "slug": "Vue"
   }
 ]
