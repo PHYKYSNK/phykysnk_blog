@@ -106,5 +106,11 @@
     "type": "更新",
     "description": "更新关于页",
     "slug": null
+  },
+  {
+    "date": "2026-09-04",
+    "type": "更新",
+    "description": "26.9.4更新开篇日志",
+    "slug": "hello-world"
   }
 ]
