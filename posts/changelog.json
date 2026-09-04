@@ -100,5 +100,11 @@
     "type": "新增",
     "description": "发布新文章：Vue 3 快速入门总结",
     "slug": "Vue"
+  },
+  {
+    "date": "2026-09-04",
+    "type": "更新",
+    "description": "更新关于页",
+    "slug": null
   }
 ]
