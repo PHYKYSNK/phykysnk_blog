@@ -112,5 +112,17 @@
     "type": "更新",
     "description": "26.9.4更新开篇日志",
     "slug": "hello-world"
+  },
+  {
+    "date": "2026-09-16",
+    "type": "新增",
+    "description": "发布新文章：Python 基础语法速查（新手版）",
+    "slug": "Python基础语法速查"
+  },
+  {
+    "date": "2026-09-16",
+    "type": "新增",
+    "description": "发布新文章：Python 复学笔记：我搞清楚了「学过就忘」是怎么回事",
+    "slug": "Python复学笔记"
   }
 ]
