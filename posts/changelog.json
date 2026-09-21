@@ -124,5 +124,11 @@
     "type": "新增",
     "description": "发布新文章：Python 复学笔记：我搞清楚了「学过就忘」是怎么回事",
     "slug": "Python复学笔记"
+  },
+  {
+    "date": "2026-09-21",
+    "type": "更新",
+    "description": "更新标签页",
+    "slug": "Python复学笔记"
   }
 ]
