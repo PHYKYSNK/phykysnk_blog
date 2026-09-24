@@ -9,6 +9,7 @@
  *   node scripts/new-post.js --changelog-add        手动添加更新日志条目
  *   node scripts/new-post.js --changelog-delete     浏览并删除日志条目
  *   node scripts/new-post.js --edit                 选择文章编辑（自动更新 updatedAt + changelog）
+ *   node scripts/new-post.js --tag                  选择文章修改标签（不打开编辑器）
  *   node scripts/new-post.js "标题" --tags "标签"    快速创建（--push 可选）
  */
 const fs = require('fs');
@@ -450,17 +451,132 @@ async function changelogDeleteMode() {
   return backToMenu();
 }
 
+// === Shared helpers for edit / tag flows ===
+
+// 收集所有已存在的标签（排序去重），用于展示供参考
+function collectAllTags(index) {
+  const set = new Set();
+  index.forEach(p => (p.tags || []).forEach(t => set.add(t)));
+  return Array.from(set).sort();
+}
+
+// 打印文章选择列表，返回选中的 index 项（含 isAbout 标记）
+function printPostPicker(index, title, extraHint) {
+  console.log(`\n  \x1b[38;5;180m${title}\x1b[0m`);
+  console.log('  \x1b[38;5;245m' + '='.repeat(30) + '\x1b[0m\n');
+  console.log(`  \x1b[38;5;245m  [0]\x1b[0m 关于页（posts/about.md）  \x1b[38;5;245m不支持标签\x1b[0m`);
+  index.forEach((p, i) => {
+    const tagStr = (p.tags && p.tags.length) ? `  \x1b[38;5;245m[${p.tags.join(', ')}]\x1b[0m` : '  \x1b[38;5;245m[无标签]\x1b[0m';
+    console.log(`  \x1b[38;5;245m  [${i + 1}]\x1b[0m ${p.title}  \x1b[38;5;245m(${p.date})\x1b[0m${tagStr}`);
+  });
+  if (extraHint) console.log(`\n  \x1b[38;5;245m  ${extraHint}\x1b[0m`);
+  console.log();
+}
+
+// 解析输入框里的标签串（支持中英文逗号），返回数组
+function parseTagInput(raw) {
+  return raw ? raw.split(/[,，]/).map(t => t.trim()).filter(Boolean) : [];
+}
+
+// 修改单篇文章的标签，返回是否发生了变更
+async function editTagsFlow(post, index) {
+  const current = (post.tags || []);
+  const allTags = collectAllTags(index);
+
+  console.log(`\n  \x1b[38;5;180m🏷️  修改标签：${post.title}\x1b[0m`);
+  console.log('  \x1b[38;5;245m' + '-'.repeat(30) + '\x1b[0m');
+  console.log(`  \x1b[38;5;245m当前标签：\x1b[0m ${current.length ? current.join(', ') : '(无)'}`);
+  if (allTags.length) console.log(`  \x1b[38;5;245m已有标签（可作为参考，直接逗号分隔输入）：\x1b[0m ${allTags.join(' / ')}\n`);
+
+  const raw = (await ask('  \x1b[38;5;173m?\x1b[0m 新标签（逗号分隔，留空则清空标签）：\x1b[38;5;222m')).trim();
+  console.log('\x1b[0m');
+
+  const next = parseTagInput(raw);
+  const same = next.length === current.length && next.every((t, i) => t === current[i]);
+  if (same) {
+    console.log('  \x1b[38;5;222m⚠ 标签没有变化\x1b[0m\n');
+    return false;
+  }
+
+  console.log(`  \x1b[38;5;245m  ${current.join(', ') || '(无)'}\x1b[0m \x1b[38;5;142m→\x1b[0m \x1b[38;5;180m${next.join(', ') || '(无)'}\x1b[0m`);
+  const ok = (await ask('  确认修改？(\x1b[38;5;142mY\x1b[0m/n)：\x1b[38;5;222m')).trim().toLowerCase();
+  console.log('\x1b[0m');
+  if (ok === 'n') { console.log('  \x1b[38;5;222m✖ 已取消\x1b[0m\n'); return false; }
+
+  post.tags = next;
+  return true;
+}
+
+// 通用 git 提交 + 推送
+function gitCommitPush(repoDir, files, message, successMsg) {
+  const { execSync } = require('child_process');
+  try {
+    execSync(`git add ${files}`, { cwd: repoDir, stdio: 'pipe' });
+    execSync(`git commit -m "${message}"`, { cwd: repoDir, stdio: 'pipe' });
+    execSync('git push', { cwd: repoDir, stdio: 'pipe' });
+    console.log(`  \x1b[38;5;142m✔\x1b[0m ${successMsg || '已推送至 GitHub'}\n`);
+    return true;
+  } catch (e) {
+    console.log(`  \x1b[38;5;222m⚠ git 操作失败：${e.stderr?.toString().trim() || e.message}\x1b[0m`);
+    return false;
+  }
+}
+
+// === 快捷入口：只改标签（不动正文、不打开编辑器） ===
+async function tagMode() {
+  const index = readJSON(INDEX_JSON) || [];
+  if (!index.length) {
+    console.log('\n  \x1b[38;5;222m⚠ 没有任何已注册的文章\x1b[0m\n');
+    return backToMenu();
+  }
+
+  printPostPicker(index, '🏷️  修改文章标签', '输入要修改标签的文章编号（0 为关于页，不支持标签）');
+
+  const pick = (await ask('  输入编号：\x1b[38;5;222m')).trim();
+  console.log('\x1b[0m');
+
+  if (pick === '0' || pick.toLowerCase() === 'a') {
+    console.log('  \x1b[38;5;222m⚠ 关于页不支持标签\x1b[0m\n');
+    return backToMenu();
+  }
+
+  const idx = parseInt(pick) - 1;
+  if (isNaN(idx) || idx < 0 || idx >= index.length) {
+    console.log('  \x1b[38;5;222m✖ 无效编号\x1b[0m\n');
+    return backToMenu();
+  }
+
+  const post = index[idx];
+  const changed = await editTagsFlow(post, index);
+  if (!changed) return backToMenu();
+
+  const date = today();
+  const oldUpdated = post.updatedAt || post.date;
+  post.updatedAt = date;
+  writeJSON(INDEX_JSON, index);
+
+  const changelog = readJSON(CHANGELOG_JSON) || [];
+  changelog.push({ date, type: '更新', description: `修改标签：${post.tags.join(', ') || '(清空)'}`, slug: post.slug });
+  writeJSON(CHANGELOG_JSON, changelog);
+
+  console.log('  \x1b[38;5;142m✔\x1b[0m index.json 已更新（tags + updatedAt ' + oldUpdated + ' → ' + date + '）');
+  console.log('  \x1b[38;5;142m✔\x1b[0m changelog.json 已更新\n');
+
+  const doPush = (await ask('  \x1b[38;5;173m?\x1b[0m 是否自动 git commit + push？(\x1b[38;5;142mY\x1b[0m/n)：\x1b[38;5;222m')).trim().toLowerCase() !== 'n';
+  console.log('\x1b[0m');
+
+  if (doPush) {
+    gitCommitPush(path.join(__dirname, '..'), `"${INDEX_JSON}" "${CHANGELOG_JSON}"`, `fix: 修改标签「${post.title}」`, '已推送至 GitHub');
+  }
+
+  console.log('  \x1b[38;5;142m🎉 标签修改完成！\x1b[0m\n');
+  return backToMenu();
+}
+
 async function editMode() {
   const index = readJSON(INDEX_JSON) || [];
 
-  console.log('\n  \x1b[38;5;180m✏️ 编辑文章\x1b[0m');
-  console.log('  \x1b[38;5;245m' + '='.repeat(30) + '\x1b[0m\n');
-
-  console.log(`  \x1b[38;5;245m  [0]\x1b[0m 关于页（posts/about.md）`);
-  index.forEach((p, i) => {
-    console.log(`  \x1b[38;5;245m  [${i + 1}]\x1b[0m ${p.title}  \x1b[38;5;245m(${p.date})\x1b[0m`);
-  });
-  console.log();
+  printPostPicker(index, '✏️ 编辑文章', '输入编号选择要编辑的文章（0 为关于页）');
 
   const pick = (await ask('  输入编号选择要编辑的文章：\x1b[38;5;222m')).trim();
   console.log('\x1b[0m');
@@ -492,28 +608,44 @@ async function editMode() {
     console.log(`  \x1b[38;5;180m📄 posts/${post.slug}.md\x1b[0m\n`);
   }
 
-  console.log('  \x1b[38;5;245m  请在编辑器中修改此文件，完成后回来继续\x1b[0m\n');
+  // === 选择要修改的内容：正文 / 标签 ===
+  let tagsChanged = false;
+  let bodyEdited = false;
 
-  // Try to open in editor
-  const { execSync } = require('child_process');
-  const repoDir = path.join(__dirname, '..');
-  try {
-    execSync(`code "${mdPath}"`, { cwd: repoDir, stdio: 'ignore' });
-    console.log('  \x1b[38;5;142m✔\x1b[0m 已用 VS Code 打开');
-  } catch {
-    try {
-      execSync(`notepad "${mdPath}"`, { cwd: repoDir, stdio: 'ignore' });
-      console.log('  \x1b[38;5;142m✔\x1b[0m 已用记事本打开');
-    } catch {
-      console.log(`  \x1b[38;5;222m⚠ 无法自动打开编辑器，请手动编辑：\x1b[0m`);
-      console.log(`     \x1b[38;5;180m${mdPath}\x1b[0m\n`);
+  if (isAbout) {
+    // 关于页只有正文
+    console.log('  \x1b[38;5;245m  请在编辑器中修改此文件，完成后回来继续\x1b[0m\n');
+    bodyEdited = await openInEditorAndWait(mdPath);
+    if (!bodyEdited) return backToMenu();
+  } else {
+    console.log('  \x1b[38;5;245m  要修改什么？\x1b[0m');
+    console.log(`  \x1b[38;5;245m  [1]\x1b[0m 正文（打开编辑器）`);
+    console.log(`  \x1b[38;5;245m  [2]\x1b[0m 标签（在终端修改）`);
+    console.log(`  \x1b[38;5;245m  [3]\x1b[0m 正文 + 标签\n`);
+
+    const what = (await ask('  请选择 [\x1b[38;5;142m1-3\x1b[0m]：\x1b[38;5;222m')).trim();
+    console.log('\x1b[0m');
+
+    if (what === '2') {
+      tagsChanged = await editTagsFlow(post, index);
+      if (!tagsChanged) return backToMenu();
+    } else if (what === '3') {
+      // 先改标签，再打开编辑器（顺序不影响结果）
+      tagsChanged = await editTagsFlow(post, index);
+      if (!tagsChanged) {
+        console.log('  \x1b[38;5;222m⚠ 标签未变更，是否仍要编辑正文？(\x1b[38;5;142mY\x1b[0m/n)：\x1b[38;5;222m');
+        console.log('\x1b[0m');
+      }
+      console.log('  \x1b[38;5;245m  请在编辑器中修改此文件，完成后回来继续\x1b[0m\n');
+      bodyEdited = await openInEditorAndWait(mdPath);
+      if (!bodyEdited && !tagsChanged) return backToMenu();
+    } else {
+      // 默认 / 选 1：只改正文
+      console.log('  \x1b[38;5;245m  请在编辑器中修改此文件，完成后回来继续\x1b[0m\n');
+      bodyEdited = await openInEditorAndWait(mdPath);
+      if (!bodyEdited) return backToMenu();
     }
   }
-
-  const done = (await ask('  编辑完成后输入 \x1b[38;5;142myes\x1b[0m 继续，直接回车取消：\x1b[38;5;222m')).trim().toLowerCase();
-  console.log('\x1b[0m');
-  if (done !== 'yes') { console.log('  \x1b[38;5;222m✖ 已取消\x1b[0m\n'); return backToMenu();
-}
 
   const date = today();
   const changelog = readJSON(CHANGELOG_JSON) || [];
@@ -529,9 +661,11 @@ async function editMode() {
     post.updatedAt = date;
     writeJSON(INDEX_JSON, index);
     console.log(`  \x1b[38;5;142m✔\x1b[0m updatedAt 已更新：${oldUpdated} → ${date}`);
+    if (tagsChanged) console.log(`  \x1b[38;5;142m✔\x1b[0m 标签已更新：${post.tags.join(', ') || '(无)'}`);
+    const descDefault = tagsChanged && !bodyEdited ? `修改标签：${post.tags.join(', ') || '(清空)'}` : `更新文章：${post.title}`;
     const desc = (await ask('  简要描述本次修改（用于更新日志）：\x1b[38;5;222m')).trim();
     console.log('\x1b[0m');
-    changelog.push({ date, type: '更新', description: desc || `更新文章：${post.title}`, slug: post.slug });
+    changelog.push({ date, type: '更新', description: desc || descDefault, slug: post.slug });
     writeJSON(CHANGELOG_JSON, changelog);
     console.log('  \x1b[38;5;142m✔\x1b[0m changelog.json 已更新\n');
   }
@@ -540,21 +674,37 @@ async function editMode() {
   console.log('\x1b[0m');
 
   if (doPush) {
-    try {
-      const addFiles = isAbout
-        ? `"${mdPath}" "${CHANGELOG_JSON}"`
-        : `"${mdPath}" "${INDEX_JSON}" "${CHANGELOG_JSON}"`;
-      execSync(`git add ${addFiles}`, { cwd: repoDir, stdio: 'pipe' });
-      execSync(`git commit -m "update: ${isAbout ? '关于页' : post.title}"`, { cwd: repoDir, stdio: 'pipe' });
-      execSync('git push', { cwd: repoDir, stdio: 'pipe' });
-      console.log('  \x1b[38;5;142m✔\x1b[0m 已推送至 GitHub\n');
-    } catch (e) {
-      console.log(`  \x1b[38;5;222m⚠ git 操作失败：${e.stderr?.toString().trim() || e.message}\x1b[0m`);
-    }
+    const repoDir = path.join(__dirname, '..');
+    const addFiles = isAbout
+      ? `"${mdPath}" "${CHANGELOG_JSON}"`
+      : `"${mdPath}" "${INDEX_JSON}" "${CHANGELOG_JSON}"`;
+    gitCommitPush(repoDir, addFiles, `update: ${isAbout ? '关于页' : post.title}`, '已推送至 GitHub');
   }
 
   console.log('  \x1b[38;5;142m🎉 更新完成！\x1b[0m\n');
   return backToMenu();
+}
+
+// 打开编辑器并等待用户确认，返回是否继续
+async function openInEditorAndWait(mdPath) {
+  const { execSync } = require('child_process');
+  const repoDir = path.join(__dirname, '..');
+  try {
+    execSync(`code "${mdPath}"`, { cwd: repoDir, stdio: 'ignore' });
+    console.log('  \x1b[38;5;142m✔\x1b[0m 已用 VS Code 打开');
+  } catch {
+    try {
+      execSync(`notepad "${mdPath}"`, { cwd: repoDir, stdio: 'ignore' });
+      console.log('  \x1b[38;5;142m✔\x1b[0m 已用记事本打开');
+    } catch {
+      console.log(`  \x1b[38;5;222m⚠ 无法自动打开编辑器，请手动编辑：\x1b[0m`);
+      console.log(`     \x1b[38;5;180m${mdPath}\x1b[0m\n`);
+    }
+  }
+  const done = (await ask('  编辑完成后输入 \x1b[38;5;142myes\x1b[0m 继续，直接回车取消：\x1b[38;5;222m')).trim().toLowerCase();
+  console.log('\x1b[0m');
+  if (done !== 'yes') { console.log('  \x1b[38;5;222m✖ 已取消\x1b[0m\n'); return false; }
+  return true;
 }
 
 async function menuMode() {
@@ -565,10 +715,11 @@ async function menuMode() {
   console.log('  \x1b[38;5;245m  [3]\x1b[0m 删除文章');
   console.log('  \x1b[38;5;245m  [4]\x1b[0m 添加更新日志');
   console.log('  \x1b[38;5;245m  [5]\x1b[0m 删除更新日志');
-  console.log('  \x1b[38;5;245m  [6]\x1b[0m 编辑文章');
-  console.log('  \x1b[38;5;245m  [7]\x1b[0m 退出\n');
+  console.log('  \x1b[38;5;245m  [6]\x1b[0m 编辑文章（正文 / 标签）');
+  console.log('  \x1b[38;5;245m  [7]\x1b[0m 修改标签');
+  console.log('  \x1b[38;5;245m  [8]\x1b[0m 退出\n');
 
-  const choice = (await ask('  请选择 [\x1b[38;5;142m1-7\x1b[0m]：\x1b[38;5;222m')).trim();
+  const choice = (await ask('  请选择 [\x1b[38;5;142m1-8\x1b[0m]：\x1b[38;5;222m')).trim();
   console.log('\x1b[0m');
 
   switch (choice) {
@@ -578,6 +729,7 @@ async function menuMode() {
     case '4': await changelogAddMode(); break;
     case '5': await changelogDeleteMode(); break;
     case '6': await editMode(); break;
+    case '7': await tagMode(); break;
     default: console.log('  \x1b[38;5;222mbye\x1b[0m\n'); process.exit(0);
   }
   await backToMenu();
@@ -602,6 +754,8 @@ if (args.includes('--scan')) {
   changelogDeleteMode();
 } else if (args.includes('--edit')) {
   editMode();
+} else if (args.includes('--tag')) {
+  tagMode();
 } else if (args.length && !args[0].startsWith('--')) {
   quickMode(args);
 } else if (args.includes('--menu') || args.includes('--help') || args.includes('-h')) {
