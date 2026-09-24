@@ -24,6 +24,16 @@
 - 设计约定：子功能结束走 `backToMenu()` 返回菜单，只有选「退出」才 `process.exit(0)`。
 - ChromaBug：不弹浏览器的 CLI stdout 管道在非 TTY 下 readline 会一次性吞掉所有输入，测试交互流程只能单步喂。
 
+## 附件与下载按钮（2026-09-24 新增）
+- 附件存放：`assets/files/`（文件名用英文，避免中文 URL 编码坑）。
+- Markdown 语法：`[按钮文字](assets/files/x.zip){download size="11.99 MB" note="Windows · 解压即用"}`
+- 渲染入口：`main.js` 的 `enhanceDownloadLinks()`，在 `marked.parse()` 之后调用。
+- **关键坑：marked 会把 `{...}` 内双引号转义成 `&quot;`**，正则须兼容两种引号，并用 `unescapeHTML()` 还原。
+- 兜底：站内 `.zip/.exe/.pdf` 等后缀链接自动转按钮（站外链接不转，避免误伤）。
+- 生成的按钮带 `download` 属性 + `.download-btn` 样式。
+- ⚠️ zip 一旦提交进 git 就永久占用历史体积，多版本更新场景应改用 GitHub Releases。
+
+
 ## 编码 | 路径坑
 - 中文 slug：读用 `decodeURIComponent`，生成链接用 `encodeURIComponent`。
 - Windows Git Bash 环境部分 Unix 命令不可用（ls/cp/grep/head/tail），改用 Read/Write/Glob/Grep 工具或 `node -e`。
