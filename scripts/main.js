@@ -61,6 +61,14 @@
 
   function esc(s) { var d = document.createElement('div'); d.appendChild(document.createTextNode(s)); return d.innerHTML; }
 
+  // marked 会把属性值里的引号转成 &quot;，此处还原为可读文本
+  function unescapeHTML(s) {
+    if (!s) return '';
+    var d = document.createElement('textarea');
+    d.innerHTML = s;
+    return d.value;
+  }
+
   function initMarked() {
     if (typeof marked !== 'undefined' && typeof hljs !== 'undefined') {
       marked.setOptions({
@@ -116,6 +124,80 @@
       toolbar.appendChild(btn);
       wrapper.appendChild(toolbar);
     });
+  }
+
+  // === 下载按钮增强 ===
+  // Markdown 语法：[按钮文字](assets/files/xxx.zip){download size="11.99 MB" note="Windows 免安装"}
+  // marked 会把 {...} 原样保留为文本，且把内部的双引号转义成 &quot;，这里一并兼容。
+  var DL_ATTR_RE = /\{download(\s+[^}]*)?\}/;
+  var DL_SIZE_RE = /size\s*=\s*(?:"|&quot;)(.*?)(?:"|&quot;)/;
+  var DL_NOTE_RE = /note\s*=\s*(?:"|&quot;)(.*?)(?:"|&quot;)/;
+
+  function enhanceDownloadLinks() {
+    // 1) 处理标准 Markdown 链接 + 紧跟的 {download ...} 花括号
+    postContent.querySelectorAll('a').forEach(function(a) {
+      var next = a.nextSibling;
+      if (!next || next.nodeType !== 3) return; // 必须是紧邻的文本节点
+      var m = next.nodeValue.match(DL_ATTR_RE);
+      if (!m) return;
+
+      var attrs = m[1] || '';
+      var sizeM = attrs.match(DL_SIZE_RE);
+      var noteM = attrs.match(DL_NOTE_RE);
+
+      // 去掉花括号，只留干净链接
+      next.nodeValue = next.nodeValue.replace(DL_ATTR_RE, '');
+
+      buildDownloadButton(a, sizeM ? unescapeHTML(sizeM[1]) : '', noteM ? unescapeHTML(noteM[1]) : '');
+    });
+
+    // 2) 兜底：指向文件类后缀的普通链接，若未加属性也自动转成下载按钮
+    var FILE_EXT_RE = /\.(zip|rar|7z|tar|gz|exe|msi|apk|dmg|pdf|docx?|xlsx?|pptx?)(\?.*)?$/i;
+    postContent.querySelectorAll('a').forEach(function(a) {
+      if (a.classList.contains('download-btn')) return; // 已处理
+      var href = a.getAttribute('href') || '';
+      if (!FILE_EXT_RE.test(href)) return;
+      // 站外链不自动降级为按钮，避免误伤参考链接
+      if (/^https?:\/\//i.test(href) && href.indexOf(location.host) === -1) return;
+      buildDownloadButton(a, '', '');
+    });
+  }
+
+  function buildDownloadButton(a, size, note) {
+    var href = a.getAttribute('href');
+    var label = (a.textContent || '下载').trim();
+
+    var btn = document.createElement('a');
+    btn.className = 'download-btn';
+    btn.href = href;
+    btn.setAttribute('download', ''); // 强制下载，而不是浏览器内预览
+    btn.setAttribute('rel', 'noopener');
+
+    var icon = document.createElement('span');
+    icon.className = 'download-btn-icon';
+    icon.setAttribute('aria-hidden', 'true');
+    btn.appendChild(icon);
+
+    var body = document.createElement('span');
+    body.className = 'download-btn-body';
+
+    var title = document.createElement('span');
+    title.className = 'download-btn-title';
+    title.textContent = label;
+    body.appendChild(title);
+
+    var metaParts = [];
+    if (size) metaParts.push(size);
+    if (note) metaParts.push(note);
+    if (metaParts.length) {
+      var meta = document.createElement('span');
+      meta.className = 'download-btn-meta';
+      meta.textContent = metaParts.join(' · ');
+      body.appendChild(meta);
+    }
+
+    btn.appendChild(body);
+    a.parentNode.replaceChild(btn, a);
   }
 
   function generateTOC(currentSlug) {
@@ -283,6 +365,7 @@
       }
       metaHTML += (post.tags.length ? ' · ' + post.tags.map(function(t) { return '<span class="post-card-tag" data-tag="' + esc(t) + '">' + esc(t) + '</span>'; }).join(', ') : '');
       postContent.innerHTML = '<h1>' + esc(post.title) + '</h1><div class="post-meta-bar">' + metaHTML + '</div>' + marked.parse(md);
+      enhanceDownloadLinks();
       highlightCodeBlocks();
       addCopyButtons();
       generateTOC(slug);

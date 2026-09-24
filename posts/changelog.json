@@ -130,5 +130,17 @@
     "type": "更新",
     "description": "更新标签页",
     "slug": "Python复学笔记"
+  },
+  {
+    "date": "2026-09-24",
+    "type": "新增",
+    "description": "发布新文章：随地大小粘：一个绕过「禁止粘贴」的键盘模拟小工具",
+    "slug": "portable-paster-tool"
+  },
+  {
+    "date": "2026-09-24",
+    "type": "新增",
+    "description": "文章内支持下载按钮（下载便携版程序包）",
+    "slug": "portable-paster-tool"
   }
 ]

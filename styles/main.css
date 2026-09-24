@@ -98,6 +98,33 @@ body::after { content: ''; position: fixed; inset: 0; background: radial-gradien
 .post-content table tbody tr:nth-child(even) { background: var(--tag-bg); }
 .post-content table tbody tr:hover { background: var(--border-light); }
 
+/* === 下载按钮 === */
+.download-btn {
+  display: inline-flex; align-items: center; gap: 12px;
+  margin: 20px 0; padding: 14px 22px;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius); text-decoration: none !important;
+  color: var(--text) !important; box-shadow: var(--shadow);
+  transition: background var(--transition), box-shadow var(--transition), transform var(--transition), border-color var(--transition);
+}
+.download-btn:hover { background: var(--bg-card-hover); box-shadow: var(--shadow-hover); transform: translateY(-1px); border-color: var(--accent); }
+.download-btn:active { transform: translateY(0); }
+.download-btn-icon { flex: 0 0 auto; width: 18px; height: 18px; position: relative; }
+.download-btn-icon::before {
+  content: ''; position: absolute; left: 50%; top: 0; width: 2px; height: 11px;
+  margin-left: -1px; background: var(--accent);
+}
+.download-btn-icon::after {
+  content: ''; position: absolute; left: 50%; top: 7px; width: 8px; height: 8px;
+  margin-left: -4px; border-right: 2px solid var(--accent); border-bottom: 2px solid var(--accent);
+  transform: rotate(45deg);
+}
+.download-btn-icon { border-bottom: 2px solid var(--accent); height: 15px; }
+.download-btn-body { display: flex; flex-direction: column; line-height: 1.4; }
+.download-btn-title { font-size: 0.95em; font-weight: 600; color: var(--text); }
+.download-btn-meta { font-size: 0.8em; color: var(--text-secondary); font-variant-numeric: tabular-nums; }
+
 /* === 上/下一篇导航 === */
 .post-nav { display: flex; justify-content: space-between; gap: 16px; margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-light); }
 .post-nav-link { flex: 1; display: flex; flex-direction: column; padding: 12px 16px; border: 1px solid var(--border-light); border-radius: 8px; text-decoration: none; color: var(--text-secondary); transition: all var(--transition); }
