@@ -17,12 +17,14 @@
   --shadow: 0 1px 4px rgba(0,0,0,0.4); --shadow-hover: 0 4px 16px rgba(0,0,0,0.5);
 }
 body { font-family: -apple-system,"Noto Sans SC","PingFang SC","Microsoft YaHei","Helvetica Neue",sans-serif; font-size: 16px; line-height: 1.8; color: var(--text); -webkit-font-smoothing: antialiased; transition: color var(--transition); position: relative; }
-body::before { content: ''; position: fixed; inset: 0; background-color: #2b3a61; background-image: url('/preview.gif'); background-repeat: no-repeat; background-size: cover; background-position: center; image-rendering: pixelated; image-rendering: crisp-edges; -ms-interpolation-mode: nearest-neighbor; z-index: -2; }
-body::after { content: ''; position: fixed; inset: 0; background: radial-gradient(ellipse at center, transparent 40%, rgba(43,58,97,0.5) 100%); z-index: -1; pointer-events: none; }
+/* 背景：水彩渐变图 contain 居中 + 同配方 CSS 渐变打底铺满。
+   图为横向均匀的垂直渐变（658×1169 竖图），两侧空白由渐变无缝补齐，
+   任何屏幕比例都不裁剪；渐变色值取自图片实际采样（0%~100%）。 */
+body::before { content: ''; position: fixed; inset: 0; z-index: -2; background-color: #edc7cf; background-image: url('/preview.webp'), linear-gradient(180deg, #fab6b1 0%, #f9bcbc 30%, #edc7cf 50%, #c7d4e7 70%, #bce4f7 85%, #bde9fa 100%); background-repeat: no-repeat, no-repeat; background-size: contain, cover; background-position: center, center; }
 ::selection { background: var(--accent); color: #fff; }
 .container { max-width: 720px; margin: 0 auto; padding: 0 24px; }
 .hidden { display: none !important; }
-.site-header { position: sticky; top: 0; z-index: 100; background: var(--bg); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); transition: background var(--transition), border-color var(--transition); }
+.site-header { position: sticky; top: 0; z-index: 100; background: var(--bg); border-bottom: 1px solid var(--border); transition: background var(--transition), border-color var(--transition); }
 
 /* === 阅读进度条 === */
 .reading-progress { position: absolute; left: 0; bottom: -1px; height: 2px; background: var(--accent); width: 0%; transition: width 0.1s linear; z-index: 101; }
