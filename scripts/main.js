@@ -5,6 +5,7 @@
   var postView = document.getElementById('post-view');
   var aboutView = document.getElementById('about-view');
   var changelogView = document.getElementById('changelog-view');
+  var trainingView = document.getElementById('training-view');
   var postList = document.getElementById('post-list');
   var postContent = document.getElementById('post-content');
   var aboutContent = document.getElementById('about-content');
@@ -343,15 +344,33 @@
     });
   }
 
-  function showHome() { homeView.classList.remove('hidden'); postView.classList.add('hidden'); aboutView.classList.add('hidden'); changelogView.classList.add('hidden'); window.scrollTo(0, 0); }
+  // === 视图切换（统一入口：新增视图只需在 views 里登记一项） ===
+  var views = {
+    home: homeView,
+    post: postView,
+    about: aboutView,
+    changelog: changelogView,
+    training: trainingView
+  };
+
+  function showView(name) {
+    Object.keys(views).forEach(function(key) {
+      var el = views[key];
+      if (el) el.classList.toggle('hidden', key !== name);
+    });
+    window.scrollTo(0, 0);
+  }
+
+  function showHome() { showView('home'); }
+
   function showAbout() {
-    homeView.classList.add('hidden'); postView.classList.add('hidden'); aboutView.classList.remove('hidden'); changelogView.classList.add('hidden'); window.scrollTo(0, 0);
+    showView('about');
     fetch('posts/about.md').then(function(r) { return r.text(); }).then(function(md) { aboutContent.innerHTML = marked.parse(md); }).catch(function() { aboutContent.innerHTML = '<p class="empty-state">加载失败</p>'; });
   }
 
   function showPost(slug) {
-    homeView.classList.add('hidden'); aboutView.classList.add('hidden'); changelogView.classList.add('hidden'); postView.classList.remove('hidden');
-    postContent.innerHTML = '<p class="loading">加载中...</p>'; window.scrollTo(0, 0);
+    showView('post');
+    postContent.innerHTML = '<p class="loading">加载中...</p>';
     var post = posts.find(function(p) { return p.slug === slug; });
     if (!post) { postContent.innerHTML = '<p class="empty-state">文章未找到</p>'; return; }
     fetch('posts/' + slug + '.md').then(function(r) { return r.text(); }).then(function(md) {
@@ -375,7 +394,7 @@
   }
 
   function showChangelog() {
-    homeView.classList.add('hidden'); postView.classList.add('hidden'); aboutView.classList.add('hidden'); changelogView.classList.remove('hidden'); window.scrollTo(0, 0);
+    showView('changelog');
     changelogList.innerHTML = '<p class="loading">加载中...</p>';
     fetch('posts/changelog.json').then(function(r) { return r.json(); }).then(function(data) { renderChangelog(data); }).catch(function() { changelogList.innerHTML = '<p class="empty-state">加载失败</p>'; });
   }
@@ -400,11 +419,145 @@
     changelogList.innerHTML = h;
   }
 
+  // === 舒尔特方格训练 ===
+  // 经典玩法：5×5 方格随机填入 1~25，按顺序依次点击，记录用时与错误数。
+  var SCHULTE_SIZE = 5;                              // 侧边格数（5 → 5×5）
+  var SCHULTE_TOTAL = SCHULTE_SIZE * SCHULTE_SIZE;   // 总格数（25）
+
+  var schulteGrid = document.getElementById('schulte-grid');
+  var schulteOverlay = document.getElementById('schulte-overlay');
+  var schulteOverlayText = document.getElementById('schulte-overlay-text');
+  var schulteStartBtn = document.getElementById('schulte-start');
+  var schulteTimeEl = document.getElementById('schulte-time');
+  var schulteProgressEl = document.getElementById('schulte-progress');
+  var schulteErrorsEl = document.getElementById('schulte-errors');
+
+  var schulte = { next: 1, errors: 0, startAt: 0, timerId: null, running: false, elapsed: 0 };
+
+  // 无偏洗牌（Fisher-Yates）；不要用 sort(() => Math.random()-0.5)，分布不均
+  function shuffle(arr) {
+    for (var i = arr.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = arr[i]; arr[i] = arr[j]; arr[j] = t;
+    }
+    return arr;
+  }
+
+  function fmtSeconds(ms) { return (ms / 1000).toFixed(2) + ' 秒'; }
+
+  function updateSchulteStats() {
+    if (schulteTimeEl) schulteTimeEl.textContent = fmtSeconds(schulte.elapsed);
+    if (schulteProgressEl) schulteProgressEl.textContent = (schulte.next - 1) + ' / ' + SCHULTE_TOTAL;
+    if (schulteErrorsEl) schulteErrorsEl.textContent = String(schulte.errors);
+  }
+
+  function renderSchulteGrid() {
+    var nums = [];
+    for (var i = 1; i <= SCHULTE_TOTAL; i++) nums.push(i);
+    shuffle(nums);
+    schulteGrid.innerHTML = '';
+    nums.forEach(function(n) {
+      var cell = document.createElement('button');
+      cell.type = 'button';
+      cell.className = 'schulte-cell';
+      cell.textContent = n;
+      cell.setAttribute('aria-label', '数字 ' + n);
+      cell.addEventListener('click', function() { onSchulteClick(cell, n); });
+      schulteGrid.appendChild(cell);
+    });
+  }
+
+  // 未开始时渲染占位格：保证方格区有高度，遮罩层不会塌陷
+  function renderPlaceholderGrid() {
+    if (!schulteGrid) return;
+    schulteGrid.innerHTML = '';
+    for (var i = 0; i < SCHULTE_TOTAL; i++) {
+      var cell = document.createElement('button');
+      cell.type = 'button';
+      cell.className = 'schulte-cell placeholder';
+      cell.disabled = true;
+      cell.setAttribute('aria-hidden', 'true');
+      schulteGrid.appendChild(cell);
+    }
+  }
+
+  function onSchulteClick(cell, num) {
+    if (!schulte.running || cell.classList.contains('done')) return;
+
+    if (num === schulte.next) {
+      cell.classList.add('done');
+      schulte.next++;
+      updateSchulteStats();
+      if (schulte.next > SCHULTE_TOTAL) finishSchulte();
+    } else {
+      schulte.errors++;
+      updateSchulteStats();
+      cell.classList.add('wrong');
+      setTimeout(function() { cell.classList.remove('wrong'); }, 300);
+    }
+  }
+
+  function tickSchulte() {
+    if (!schulte.running) return;
+    schulte.elapsed = performance.now() - schulte.startAt;
+    updateSchulteStats();
+  }
+
+  function startSchulte() {
+    if (schulte.timerId) { clearInterval(schulte.timerId); schulte.timerId = null; }
+    schulte.next = 1;
+    schulte.errors = 0;
+    schulte.elapsed = 0;
+    schulte.running = true;
+    renderSchulteGrid();
+    updateSchulteStats();
+    if (schulteOverlay) schulteOverlay.classList.add('hidden');
+    schulte.startAt = performance.now();
+    schulte.timerId = setInterval(tickSchulte, 50);
+  }
+
+  function finishSchulte() {
+    schulte.running = false;
+    if (schulte.timerId) { clearInterval(schulte.timerId); schulte.timerId = null; }
+    schulte.elapsed = performance.now() - schulte.startAt;
+    updateSchulteStats();
+    if (!schulteOverlay) return;
+    schulteOverlay.classList.remove('hidden');
+    var errLine = schulte.errors === 0
+      ? '<span class="schulte-result-note">零失误</span>'
+      : '<span class="schulte-result-note">错误 ' + schulte.errors + ' 次</span>';
+    schulteOverlayText.innerHTML =
+      '<span class="schulte-result-label">用时</span>' +
+      '<span class="schulte-result-time">' + fmtSeconds(schulte.elapsed) + '</span>' +
+      errLine;
+    if (schulteStartBtn) schulteStartBtn.textContent = '再来一次';
+  }
+
+  // 每次进入训练页都重置，避免上一次的计时器残留
+  function resetSchulte() {
+    if (schulte.timerId) { clearInterval(schulte.timerId); schulte.timerId = null; }
+    schulte.running = false;
+    schulte.next = 1;
+    schulte.errors = 0;
+    schulte.elapsed = 0;
+    updateSchulteStats();
+    renderPlaceholderGrid();
+    if (schulteOverlayText) schulteOverlayText.textContent = '准备好后点击开始';
+    if (schulteStartBtn) schulteStartBtn.textContent = '开始';
+    if (schulteOverlay) schulteOverlay.classList.remove('hidden');
+  }
+
+  function showTraining() {
+    showView('training');
+    resetSchulte();
+  }
+
   function handleRoute() {
     var hash = window.location.hash.slice(1) || '/';
     if (hash.startsWith('/post/')) showPost(decodeURIComponent(hash.replace('/post/', '')));
     else if (hash === '/about') showAbout();
     else if (hash === '/changelog') showChangelog();
+    else if (hash === '/training') showTraining();
     else showHome();
   }
 
@@ -419,6 +572,7 @@
     if (backToTop) {
       backToTop.addEventListener('click', function() { window.scrollTo({ top: 0, behavior: 'smooth' }); });
     }
+    if (schulteStartBtn) schulteStartBtn.addEventListener('click', startSchulte);
     handleRoute();
   }
 

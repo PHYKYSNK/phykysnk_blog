@@ -14,6 +14,7 @@
     <a href="#/" class="site-title">学习日志</a>
     <nav class="site-nav">
       <a href="#/" class="nav-link">首页</a>
+      <a href="#/training" class="nav-link">训练</a>
       <a href="#/changelog" class="nav-link">更新日志</a>
       <a href="#/about" class="nav-link">关于</a>
     </nav>
@@ -77,6 +78,35 @@
       <p class="home-subtitle">博客的每一次变化，都记录在这里</p>
     </div>
     <div id="changelog-list" class="changelog-list"></div>
+  </section>
+  <section id="training-view" class="hidden">
+    <a href="#/" class="back-link">&larr; 返回</a>
+    <div class="training-header">
+      <h1 class="home-title">舒尔特方格</h1>
+      <p class="home-subtitle">按 1 → 25 的顺序依次点击，训练注意力集中度</p>
+    </div>
+    <div class="schulte-stats">
+      <div class="schulte-stat">
+        <span class="schulte-stat-label">时间</span>
+        <span class="schulte-stat-value" id="schulte-time">0.00 秒</span>
+      </div>
+      <div class="schulte-stat">
+        <span class="schulte-stat-label">进度</span>
+        <span class="schulte-stat-value" id="schulte-progress">0 / 25</span>
+      </div>
+      <div class="schulte-stat">
+        <span class="schulte-stat-label">错误</span>
+        <span class="schulte-stat-value" id="schulte-errors">0</span>
+      </div>
+    </div>
+    <div class="schulte-board-wrap">
+      <div id="schulte-grid" class="schulte-grid"></div>
+      <div id="schulte-overlay" class="schulte-overlay">
+        <p class="schulte-overlay-text" id="schulte-overlay-text">准备好后点击开始</p>
+        <button id="schulte-start" class="schulte-start-btn" type="button">开始</button>
+      </div>
+    </div>
+    <p class="schulte-tip">尽量用余光扫视整块方格，而不是逐个盯着找；已点过的格子会变淡，方便确认。</p>
   </section>
 </main>
 

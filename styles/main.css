@@ -242,3 +242,72 @@ body::after { content: ''; position: fixed; inset: 0; background: radial-gradien
   .site-hero-title { font-size: 1.4em; }
   .site-hero-compact { min-height: 140px; }
 }
+
+/* === 舒尔特方格训练（移动优先） === */
+.training-header { text-align: center; padding: 32px 0 20px; }
+
+.schulte-stats { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; }
+.schulte-stat { flex: 1 1 0; max-width: 150px; padding: 10px 8px; text-align: center; background: var(--bg-card); border: 1px solid var(--border-light); border-radius: var(--radius); }
+.schulte-stat-label { display: block; font-size: 0.72em; color: var(--text-secondary); margin-bottom: 2px; letter-spacing: 0.06em; }
+.schulte-stat-value { display: block; font-size: 1.15em; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
+
+.schulte-board-wrap { position: relative; width: 100%; max-width: 480px; margin: 0 auto; }
+.schulte-grid { display: grid; grid-template-columns: repeat(5, 1fr); grid-template-rows: repeat(5, 1fr); gap: 6px; width: 100%; aspect-ratio: 1 / 1; }
+
+.schulte-cell {
+  display: flex; align-items: center; justify-content: center; padding: 0; min-width: 0;
+  font-family: inherit; font-size: clamp(1.05em, 4.6vw, 1.5em); font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--text); background: var(--bg-card);
+  border: 1px solid var(--border); border-radius: 8px;
+  cursor: pointer;
+  -webkit-user-select: none; user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition: background var(--transition), border-color var(--transition), color var(--transition), opacity 0.2s ease, transform 0.08s ease;
+}
+.schulte-cell:hover { background: var(--bg-card-hover); border-color: var(--accent); }
+.schulte-cell:active { transform: scale(0.95); }
+.schulte-cell:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.schulte-cell.done { opacity: 0.2; background: var(--tag-bg); border-color: transparent; pointer-events: none; }
+.schulte-cell.wrong { background: #e6b8a4; border-color: #c2795a; color: #5c2410; }
+[data-theme="dark"] .schulte-cell.wrong { background: #5a2c1c; border-color: #96502f; color: #f2cdb8; }
+.schulte-cell.placeholder { background: var(--tag-bg); border-color: transparent; opacity: 0.45; cursor: default; }
+.schulte-cell.placeholder:hover { background: var(--tag-bg); border-color: transparent; }
+.schulte-cell.placeholder:active { transform: none; }
+
+.schulte-overlay {
+  position: absolute; inset: 0; z-index: 2;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+  padding: 20px; text-align: center;
+  background: rgba(246, 237, 223, 0.94);
+  border: 1px solid var(--border-light); border-radius: var(--radius);
+}
+[data-theme="dark"] .schulte-overlay { background: rgba(26, 22, 18, 0.94); }
+.schulte-overlay-text { font-size: 0.95em; color: var(--text-secondary); line-height: 1.7; }
+.schulte-result-label { display: block; font-size: 0.78em; color: var(--text-secondary); letter-spacing: 0.08em; margin-bottom: 2px; }
+.schulte-result-time { display: block; font-size: 1.9em; font-weight: 800; color: var(--accent); font-variant-numeric: tabular-nums; }
+.schulte-result-note { display: block; margin-top: 6px; font-size: 0.85em; color: var(--text-secondary); }
+
+.schulte-start-btn {
+  padding: 12px 44px; font-family: inherit; font-size: 1.05em; font-weight: 600;
+  color: #fff; background: var(--accent); border: none; border-radius: 10px;
+  cursor: pointer; touch-action: manipulation;
+  transition: background var(--transition), transform 0.08s ease;
+}
+.schulte-start-btn:hover { background: var(--accent-hover); }
+.schulte-start-btn:active { transform: scale(0.97); }
+
+.schulte-tip { max-width: 480px; margin: 20px auto 8px; font-size: 0.82em; line-height: 1.75; color: var(--text-secondary); text-align: center; }
+
+@media (max-width: 600px) {
+  .training-header { padding: 24px 0 16px; }
+  .schulte-stats { gap: 8px; margin-bottom: 16px; }
+  .schulte-stat { padding: 8px 6px; }
+  .schulte-stat-value { font-size: 1.05em; }
+  .schulte-grid { gap: 5px; }
+  .header-inner { gap: 8px; }
+  .site-nav { gap: 2px; }
+  .nav-link { padding: 4px 6px; font-size: 0.8em; }
+  .site-title { font-size: 0.95em; }
+}
