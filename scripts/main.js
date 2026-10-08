@@ -420,9 +420,11 @@
   }
 
   // === 舒尔特方格训练 ===
-  // 经典玩法：5×5 方格随机填入 1~25，按顺序依次点击，记录用时与错误数。
-  var SCHULTE_SIZE = 5;                              // 侧边格数（5 → 5×5）
-  var SCHULTE_TOTAL = SCHULTE_SIZE * SCHULTE_SIZE;   // 总格数（25）
+  // 玩法：N×N 方格随机填入 1~N²，按顺序依次点击，记录用时与错误数。
+  // 边长可选 3 / 5 / 7（3×3 入门、5×5 经典、7×7 进阶）。
+  var SCHULTE_SIZES = [3, 5, 7];
+  var schulteSize = 5;                                // 当前边长，默认 5（经典）
+  function schulteTotal() { return schulteSize * schulteSize; }
 
   var schulteGrid = document.getElementById('schulte-grid');
   var schulteOverlay = document.getElementById('schulte-overlay');
@@ -431,6 +433,7 @@
   var schulteTimeEl = document.getElementById('schulte-time');
   var schulteProgressEl = document.getElementById('schulte-progress');
   var schulteErrorsEl = document.getElementById('schulte-errors');
+  var schulteSubtitleEl = document.getElementById('schulte-subtitle');
 
   var schulte = { next: 1, errors: 0, startAt: 0, timerId: null, running: false, elapsed: 0 };
 
@@ -447,13 +450,37 @@
 
   function updateSchulteStats() {
     if (schulteTimeEl) schulteTimeEl.textContent = fmtSeconds(schulte.elapsed);
-    if (schulteProgressEl) schulteProgressEl.textContent = (schulte.next - 1) + ' / ' + SCHULTE_TOTAL;
+    if (schulteProgressEl) schulteProgressEl.textContent = (schulte.next - 1) + ' / ' + schulteTotal();
     if (schulteErrorsEl) schulteErrorsEl.textContent = String(schulte.errors);
+  }
+
+  // 同步「尺寸」相关的界面：按钮高亮、方格列数、格内字号、副标题
+  function updateSchulteSizeUI() {
+    SCHULTE_SIZES.forEach(function(s) {
+      var btn = document.getElementById('schulte-size-' + s);
+      if (btn) btn.classList.toggle('is-active', s === schulteSize);
+    });
+    if (schulteGrid) {
+      schulteGrid.style.gridTemplateColumns = 'repeat(' + schulteSize + ', 1fr)';
+      schulteGrid.style.gridTemplateRows = 'repeat(' + schulteSize + ', 1fr)';
+      schulteGrid.setAttribute('data-size', String(schulteSize));
+    }
+    if (schulteSubtitleEl) {
+      schulteSubtitleEl.textContent = '按 1 → ' + schulteTotal() + ' 的顺序依次点击，训练注意力集中度';
+    }
+  }
+
+  // 切换难度：直接清掉当前进度，回到待开始状态
+  function setSchulteSize(size) {
+    if (SCHULTE_SIZES.indexOf(size) === -1) return;
+    if (size === schulteSize) return;
+    schulteSize = size;
+    resetSchulte();
   }
 
   function renderSchulteGrid() {
     var nums = [];
-    for (var i = 1; i <= SCHULTE_TOTAL; i++) nums.push(i);
+    for (var i = 1; i <= schulteTotal(); i++) nums.push(i);
     shuffle(nums);
     schulteGrid.innerHTML = '';
     nums.forEach(function(n) {
@@ -471,7 +498,7 @@
   function renderPlaceholderGrid() {
     if (!schulteGrid) return;
     schulteGrid.innerHTML = '';
-    for (var i = 0; i < SCHULTE_TOTAL; i++) {
+    for (var i = 0; i < schulteTotal(); i++) {
       var cell = document.createElement('button');
       cell.type = 'button';
       cell.className = 'schulte-cell placeholder';
@@ -488,7 +515,7 @@
       cell.classList.add('done');
       schulte.next++;
       updateSchulteStats();
-      if (schulte.next > SCHULTE_TOTAL) finishSchulte();
+      if (schulte.next > schulteTotal()) finishSchulte();
     } else {
       schulte.errors++;
       updateSchulteStats();
@@ -540,6 +567,7 @@
     schulte.next = 1;
     schulte.errors = 0;
     schulte.elapsed = 0;
+    updateSchulteSizeUI();
     updateSchulteStats();
     renderPlaceholderGrid();
     if (schulteOverlayText) schulteOverlayText.textContent = '准备好后点击开始';
@@ -573,6 +601,10 @@
       backToTop.addEventListener('click', function() { window.scrollTo({ top: 0, behavior: 'smooth' }); });
     }
     if (schulteStartBtn) schulteStartBtn.addEventListener('click', startSchulte);
+    SCHULTE_SIZES.forEach(function(s) {
+      var btn = document.getElementById('schulte-size-' + s);
+      if (btn) btn.addEventListener('click', function() { setSchulteSize(s); });
+    });
     handleRoute();
   }
 

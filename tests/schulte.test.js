@@ -186,6 +186,63 @@ check('重进训练页按钮回到「开始」', startBtn.textContent === '开�
   check('训练视图显示时 ' + id + ' 隐藏', getEl(id).classList.contains('hidden'));
 });
 
+// 9. 尺寸切换（3×3 / 5×5 / 7×7）
+const subtitle = getEl('schulte-subtitle');
+const btn3 = getEl('schulte-size-3');
+const btn5 = getEl('schulte-size-5');
+const btn7 = getEl('schulte-size-7');
+
+check('默认 5×5 时 5×5 按钮高亮', btn5.classList.contains('is-active'));
+check('默认 5×5 时 3×3 按钮未高亮', !btn3.classList.contains('is-active'));
+check('默认副标题为 1 → 25', subtitle.textContent.indexOf('1 → 25') !== -1, subtitle.textContent);
+
+// 切到 3×3
+btn3.fire('click');
+check('切到 3×3 后渲染 9 个占位格', grid.childNodes.length === 9, '实际 ' + grid.childNodes.length);
+check('切到 3×3 后进度 0 / 9', progEl.textContent === '0 / 9', progEl.textContent);
+check('切到 3×3 后副标题为 1 → 9', subtitle.textContent.indexOf('1 → 9') !== -1, subtitle.textContent);
+check('切到 3×3 后 3×3 按钮高亮', btn3.classList.contains('is-active'));
+check('切到 3×3 后 5×5 按钮不再高亮', !btn5.classList.contains('is-active'));
+check('切到 3×3 后方格标记 data-size=3', grid.getAttribute('data-size') === '3', grid.getAttribute('data-size'));
+check('切到 3×3 后遮罩可见', !overlay.classList.contains('hidden'));
+
+// 3×3 实际玩一局
+startBtn.fire('click');
+const cells3 = grid.childNodes;
+check('3×3 开始后渲染 9 个格子', cells3.length === 9, '实际 ' + cells3.length);
+const nums3 = cells3.map((c) => Number(c.textContent)).sort((a, b) => a - b);
+check('3×3 数字为不重复的 1..9', JSON.stringify(nums3) === JSON.stringify([1,2,3,4,5,6,7,8,9]));
+for (let n = 1; n <= 9; n++) { cells3.find((c) => Number(c.textContent) === n).fire('click'); }
+check('3×3 依次点完后进度 9 / 9', progEl.textContent === '9 / 9', progEl.textContent);
+check('3×3 完成后按钮为「再来一次」', startBtn.textContent === '再来一次', startBtn.textContent);
+
+// 切到 7×7（应重置）
+btn7.fire('click');
+check('切到 7×7 后渲染 49 个占位格', grid.childNodes.length === 49, '实际 ' + grid.childNodes.length);
+check('切到 7×7 后进度 0 / 49', progEl.textContent === '0 / 49', progEl.textContent);
+check('切到 7×7 后按钮回到「开始」', startBtn.textContent === '开始', startBtn.textContent);
+check('切到 7×7 后副标题为 1 → 49', subtitle.textContent.indexOf('1 → 49') !== -1, subtitle.textContent);
+check('切到 7×7 后 7×7 按钮高亮', btn7.classList.contains('is-active'));
+check('切到 7×7 后 3×3 按钮不再高亮', !btn3.classList.contains('is-active'));
+check('切到 7×7 后方格标记 data-size=7', grid.getAttribute('data-size') === '7', grid.getAttribute('data-size'));
+
+startBtn.fire('click');
+const cells7 = grid.childNodes;
+check('7×7 开始后渲染 49 个格子', cells7.length === 49, '实际 ' + cells7.length);
+const nums7 = cells7.map((c) => Number(c.textContent)).sort((a, b) => a - b);
+check('7×7 数字为不重复的 1..49', JSON.stringify(nums7) === JSON.stringify(Array.from({ length: 49 }, (_, i) => i + 1)));
+
+// 重复点击当前尺寸不应重置进度
+cells7.find((c) => Number(c.textContent) === 1).fire('click');
+check('7×7 点击 1 后进度 1 / 49', progEl.textContent === '1 / 49', progEl.textContent);
+btn7.fire('click');
+check('重复点击当前尺寸不重置进度', progEl.textContent === '1 / 49', progEl.textContent);
+
+// 切回 5×5
+btn5.fire('click');
+check('切回 5×5 后渲染 25 个占位格', grid.childNodes.length === 25, '实际 ' + grid.childNodes.length);
+check('切回 5×5 后副标题为 1 → 25', subtitle.textContent.indexOf('1 → 25') !== -1, subtitle.textContent);
+
 // 输出
 let failed = 0;
 results.forEach((r) => {
