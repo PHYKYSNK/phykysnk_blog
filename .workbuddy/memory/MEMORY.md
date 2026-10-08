@@ -3,7 +3,30 @@
 ## 项目概况
 - 纯静态 Markdown 驱动 SPA，hash 路由，托管 Cloudflare Pages，`git push` 触发自动部署。
 - 路径：`D:\A_CODE\github\blog`；仓库 `github.com:PHYKYSNK/phykysnk_blog.git`。
-- 视图容器：home / post / about / changelog，靠切换 `hidden` 类实现。
+- 视图容器：home / post / about / changelog / **training**（2026-10-08 新增）。
+
+## 视图切换（2026-10-08 重构）
+- `main.js` 里 `var views = {home, post, about, changelog, training}` + `showView(name)`。
+- 用 `classList.toggle('hidden', key !== name)` 统一处理，**新增页面只需在 views 登记 + 加路由分支**。
+- 不要改回手写枚举 hidden（旧写法每加一页要改 N 处，漏一处会两页叠加）。
+
+## 路由
+- `#/`、`#/post/{slug}`、`#/about`、`#/changelog`、`#/training`。
+
+## 舒尔特方格训练页（2026-10-08）
+- 入口：导航栏「训练」→ `#/training`；样式 `.schulte-*`，逻辑在 `main.js` 的「舒尔特方格训练」段。
+- 基础版：5×5 固定（`SCHULTE_SIZE` 常量）、`performance.now()` 计时、错误计数；**无历史记录**。
+- 洗牌用 Fisher-Yates；点对加 `.done`，点错加 `.wrong`。
+- `renderPlaceholderGrid()` 保证未开始时方格区有高度，否则遮罩层（absolute inset:0）会塌陷。
+- 移动端要点：`touch-action: manipulation` / `user-select: none` / 点过格子变淡（防手指遮挡不确定）。
+
+## 测试方式（无浏览器环境，可复用）
+- 环境无 agent-browser、无 npm（Bash 也缺 ls/cp/grep 等）。
+- 做法：自建**最小 DOM 桩**（Element/document/window/localStorage/fetch/performance），
+  用 `new Function(...)` 注入后执行 `main.js`，捕获 `DOMContentLoaded` 回调触发，
+  再手动派发 hashchange/click 驱动流程。见 `tests/schulte.test.js`（28 项断言）。
+- 运行：`node tests/schulte.test.js`（exit 0 = 全过）。
+
 
 ## 数据结构（关键）
 - `posts/index.json`：文章注册表，每条含 `slug / title / date / updatedAt / tags[] / excerpt`。**标签只在这里**。
