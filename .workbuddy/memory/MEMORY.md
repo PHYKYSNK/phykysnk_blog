@@ -14,17 +14,23 @@
 - `#/`、`#/post/{slug}`、`#/about`、`#/changelog`、`#/training`。
 
 ## 舒尔特方格训练页（2026-10-08）
-- 入口：导航栏「训练」→ `#/training`；样式 `.schulte-*`，逻辑在 `main.js` 的「舒尔特方格训练」段。
-- 基础版：5×5 固定（`SCHULTE_SIZE` 常量）、`performance.now()` 计时、错误计数；**无历史记录**。
+- 入口：导航栏**「舒尔特训练」**→ `#/training`；样式 `.schulte-*`，逻辑在 `main.js` 的「舒尔特方格训练」段。
+- **尺寸可选 3×3 / 5×5 / 7×7**（`SCHULTE_SIZES`，默认 5）。用可变 `schulteSize` + `schulteTotal()`，
+  **不要再写成 `SCHULTE_SIZE` 常量**（旧常量已删）。切尺寸入口 `setSchulteSize()`，
+  界面同步在 `updateSchulteSizeUI()`（按钮高亮 + `gridTemplateColumns` + `data-size` + 副标题）。
+  `setSchulteSize` 传相同值会直接 return，**不重置进度**。
+- `performance.now()` 计时、错误计数；**无历史记录**。
 - 洗牌用 Fisher-Yates；点对加 `.done`，点错加 `.wrong`。
 - `renderPlaceholderGrid()` 保证未开始时方格区有高度，否则遮罩层（absolute inset:0）会塌陷。
 - 移动端要点：`touch-action: manipulation` / `user-select: none` / 点过格子变淡（防手指遮挡不确定）。
+- 字号必须按尺寸调（`.schulte-grid[data-size="7"] .schulte-cell`），否则 7×7 数字会溢出格子。
+- ⚠️ 7×7 在 375px 手机上格子仅约 45.6px，属**临界可用**（低于 Material 48dp）。
 
 ## 测试方式（无浏览器环境，可复用）
 - 环境无 agent-browser、无 npm（Bash 也缺 ls/cp/grep 等）。
 - 做法：自建**最小 DOM 桩**（Element/document/window/localStorage/fetch/performance），
   用 `new Function(...)` 注入后执行 `main.js`，捕获 `DOMContentLoaded` 回调触发，
-  再手动派发 hashchange/click 驱动流程。见 `tests/schulte.test.js`（28 项断言）。
+  再手动派发 hashchange/click 驱动流程。见 `tests/schulte.test.js`（55 项断言，含尺寸切换）。
 - 运行：`node tests/schulte.test.js`（exit 0 = 全过）。
 
 
