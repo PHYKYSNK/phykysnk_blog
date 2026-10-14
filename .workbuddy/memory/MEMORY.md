@@ -69,6 +69,9 @@
 
 ## 用户偏好
 - 暖色调（米黄 `#f6eddf` / 暖深褐 `#1a1612`），白天夜间都暖。
-- 背景：`preview.gif` 单张 cover + `image-rendering: pixelated` + 晕影遮罩。
+- **背景（2026-10-08 换图）**：`preview.webp`（658×1169 竖版水彩渐变，珊瑚粉 `#fab6b1` → 淡紫灰 `#edc7cf` → 冰蓝 `#bde9fa`，横向完全均匀）。
+  `body::before` = 图片 `contain` 居中 + **同配方 `linear-gradient(180deg, …)` 打底 `cover`**；因图横向均匀，两侧露出的渐变与图无缝衔接，任何屏幕比例都不裁剪。
+  ⚠️ **不要再加 `image-rendering: pixelated`**（旧 GIF 像素风遗留，会毁掉水彩纹理）；**不要再加晕影遮罩**（旧的 `#2b3a61` 深蓝晕影取自旧图，已删）。
+  header 不加 `backdrop-filter`（背景 `var(--bg)` 不透明，blur 无视觉效果、纯烧 GPU）。旧 `preview.gif`（876KB/56帧动画）已删。
 - **要求先解释根因再动手**，不接受闷头改。
 - 改数据前喜欢知道自己改的是哪个文件、哪一层。
